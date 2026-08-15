@@ -1,0 +1,616 @@
+uv run python -m src
+Preparing token constraints...
+What is the sum of 2 and 3?
+
+================================================================================
+SELECTION CONTEXT
+================================================================================
+You are a function calling assistant. Read the user's request and choose exactly one function from the list that best fulfils it.
+
+Available functions:
+- fn_add_numbers(a: number, b: number): Add two numbers together and return their sum.
+- fn_greet(name: string): Generate a greeting message for a person by name.
+- fn_reverse_string(s: string): Reverse a string and return the reversed result.
+- fn_get_square_root(a: number): Calculate the square root of a number.
+- fn_substitute_string_with_regex(source_string: string, regex: string, replacement: string): Replace all occurrences matching a regex pattern in a string.
+
+User request: "What is the sum of 2 and 3?"
+
+Respond with a single JSON object describing the function call.
+Function call: {"name": "
+================================================================================
+
+================================================================================
+DECODING STEP 0
+================================================================================
+Generated:
+''
+Generated token IDs:
+[]
+Input token IDs:
+[2610, 525, 264, 729, 8098, 17847, 13, 4457, 279, 1196, 594, 1681, 323, 5157, 6896, 825, 729, 504, 279, 1140, 429, 1850, 5599, 69, 8669, 432, 382, 16485, 5746, 510, 12, 5168, 2891, 32964, 2877, 25, 1372, 11, 293, 25, 1372, 1648, 2691, 1378, 5109, 3786, 323, 470, 862, 2629, 624, 12, 5168, 1889, 3744, 3153, 25, 914, 1648, 19813, 264, 42113, 1943, 369, 264, 1697, 553, 829, 624, 12, 5168, 43277, 3904, 1141, 25, 914, 1648, 24277, 264, 914, 323, 470, 279, 27437, 1102, 624, 12, 5168, 3062, 39794, 12993, 2877, 25, 1372, 1648, 20517, 279, 9334, 3704, 315, 264, 1372, 624, 12, 5168, 5228, 7660, 3904, 6615, 41832, 12437, 3904, 25, 914, 11, 20180, 25, 914, 11, 13723, 25, 914, 1648, 29558, 678, 56015, 12579, 264, 20180, 5383, 304, 264, 914, 382, 1474, 1681, 25, 330, 3838, 374, 279, 2629, 315, 220, 17, 323, 220, 18, 11974, 65354, 448, 264, 3175, 4718, 1633, 22692, 279, 729, 1618, 624, 5152, 1618, 25, 5212, 606, 788, 330]
+
+================================================================================
+RAW MODEL TOP TOKENS
+================================================================================
+logit=   30.8112 id=  8822 text='fn'
+logit=   20.7293 id=  5168 text=' fn'
+logit=   18.4283 id=   718 text='add'
+logit=   18.2282 id= 40095 text='\tfn'
+logit=   17.7748 id=  2198 text='","'
+logit=   17.7439 id= 11894 text='fun'
+logit=   17.7240 id=   497 text='",'
+logit=   17.6735 id= 24008 text='(fn'
+logit=   17.3987 id= 17395 text='dn'
+logit=   17.1003 id=  2261 text='ln'
+logit=   16.7878 id= 46844 text='...",'
+logit=   16.7380 id=  4905 text='gn'
+logit=   16.7156 id=  1688 text='function'
+logit=   16.7123 id=  2830 text='func'
+logit=   16.5468 id=   756 text='",\n'
+logit=   16.3548 id=    16 text='1'
+logit=   16.2111 id=  4064 text='None'
+logit=   16.1672 id= 24911 text='Fn'
+logit=   16.1568 id=  6697 text='none'
+logit=   15.7326 id=  1242 text='sum'
+================================================================================
+
+--------------------------------------------------------------------------------
+CLOSED GRAMMAR STATE
+--------------------------------------------------------------------------------
+Grammar: TrieGrammar
+Generated IDs: []
+Allowed IDs: [8822]
+Trie complete: False
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CLOSED GRAMMAR CANDIDATES
+--------------------------------------------------------------------------------
+logit=   30.8112 id=  8822 text='fn'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CHOSEN TOKEN
+--------------------------------------------------------------------------------
+id:       8822
+text:     'fn'
+logit:    30.8112
+status:   continue
+previous: ''
+new:      'fn'
+--------------------------------------------------------------------------------
+GENERATED NOW: 'fn'
+
+================================================================================
+DECODING STEP 1
+================================================================================
+Generated:
+'fn'
+Generated token IDs:
+[8822]
+Input token IDs:
+[2610, 525, 264, 729, 8098, 17847, 13, 4457, 279, 1196, 594, 1681, 323, 5157, 6896, 825, 729, 504, 279, 1140, 429, 1850, 5599, 69, 8669, 432, 382, 16485, 5746, 510, 12, 5168, 2891, 32964, 2877, 25, 1372, 11, 293, 25, 1372, 1648, 2691, 1378, 5109, 3786, 323, 470, 862, 2629, 624, 12, 5168, 1889, 3744, 3153, 25, 914, 1648, 19813, 264, 42113, 1943, 369, 264, 1697, 553, 829, 624, 12, 5168, 43277, 3904, 1141, 25, 914, 1648, 24277, 264, 914, 323, 470, 279, 27437, 1102, 624, 12, 5168, 3062, 39794, 12993, 2877, 25, 1372, 1648, 20517, 279, 9334, 3704, 315, 264, 1372, 624, 12, 5168, 5228, 7660, 3904, 6615, 41832, 12437, 3904, 25, 914, 11, 20180, 25, 914, 11, 13723, 25, 914, 1648, 29558, 678, 56015, 12579, 264, 20180, 5383, 304, 264, 914, 382, 1474, 1681, 25, 330, 3838, 374, 279, 2629, 315, 220, 17, 323, 220, 18, 11974, 65354, 448, 264, 3175, 4718, 1633, 22692, 279, 729, 1618, 624, 5152, 1618, 25, 5212, 606, 788, 330, 8822]
+
+================================================================================
+RAW MODEL TOP TOKENS
+================================================================================
+logit=   33.1990 id=  2891 text='_add'
+logit=   22.8145 id=  5228 text='_sub'
+logit=   20.9046 id=  8581 text='_ADD'
+logit=   20.3058 id=  1889 text='_g'
+logit=   20.1487 id=  2691 text=' Add'
+logit=   19.9594 id= 21346 text='_Add'
+logit=   19.6460 id=  3062 text='_get'
+logit=   19.3217 id=  2212 text='Add'
+logit=   19.1320 id= 18570 text='-add'
+logit=   18.6631 id= 10027 text='_ad'
+logit=   18.5260 id= 15814 text=' ADD'
+logit=   18.1192 id=   563 text='__'
+logit=   17.5925 id=  1364 text='.add'
+logit=   17.2983 id= 37972 text='\tAdd'
+logit=   17.0602 id=    62 text='_'
+logit=   16.8941 id= 10160 text='_sum'
+logit=   16.7745 id= 13429 text='_call'
+logit=   16.5721 id=   880 text='_b'
+logit=   16.5251 id=   497 text='",'
+logit=   16.4081 id=  4306 text='_a'
+================================================================================
+
+--------------------------------------------------------------------------------
+CLOSED GRAMMAR STATE
+--------------------------------------------------------------------------------
+Grammar: TrieGrammar
+Generated IDs: [8822]
+Allowed IDs: [2891, 1889, 43277, 3062, 5228]
+Trie complete: False
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CLOSED GRAMMAR CANDIDATES
+--------------------------------------------------------------------------------
+logit=   33.1990 id=  2891 text='_add'
+logit=   20.3058 id=  1889 text='_g'
+logit=   15.0345 id= 43277 text='_reverse'
+logit=   19.6460 id=  3062 text='_get'
+logit=   22.8145 id=  5228 text='_sub'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CHOSEN TOKEN
+--------------------------------------------------------------------------------
+id:       2891
+text:     '_add'
+logit:    33.1990
+status:   continue
+previous: 'fn'
+new:      'fn_add'
+--------------------------------------------------------------------------------
+GENERATED NOW: 'fn_add'
+
+================================================================================
+DECODING STEP 2
+================================================================================
+Generated:
+'fn_add'
+Generated token IDs:
+[8822, 2891]
+Input token IDs:
+[2610, 525, 264, 729, 8098, 17847, 13, 4457, 279, 1196, 594, 1681, 323, 5157, 6896, 825, 729, 504, 279, 1140, 429, 1850, 5599, 69, 8669, 432, 382, 16485, 5746, 510, 12, 5168, 2891, 32964, 2877, 25, 1372, 11, 293, 25, 1372, 1648, 2691, 1378, 5109, 3786, 323, 470, 862, 2629, 624, 12, 5168, 1889, 3744, 3153, 25, 914, 1648, 19813, 264, 42113, 1943, 369, 264, 1697, 553, 829, 624, 12, 5168, 43277, 3904, 1141, 25, 914, 1648, 24277, 264, 914, 323, 470, 279, 27437, 1102, 624, 12, 5168, 3062, 39794, 12993, 2877, 25, 1372, 1648, 20517, 279, 9334, 3704, 315, 264, 1372, 624, 12, 5168, 5228, 7660, 3904, 6615, 41832, 12437, 3904, 25, 914, 11, 20180, 25, 914, 11, 13723, 25, 914, 1648, 29558, 678, 56015, 12579, 264, 20180, 5383, 304, 264, 914, 382, 1474, 1681, 25, 330, 3838, 374, 279, 2629, 315, 220, 17, 323, 220, 18, 11974, 65354, 448, 264, 3175, 4718, 1633, 22692, 279, 729, 1618, 624, 5152, 1618, 25, 5212, 606, 788, 330, 8822, 2891]
+
+================================================================================
+RAW MODEL TOP TOKENS
+================================================================================
+logit=   32.7804 id= 32964 text='_numbers'
+logit=   20.4751 id= 23241 text='_two'
+logit=   19.0776 id=  5109 text=' numbers'
+logit=   18.7489 id=   497 text='",'
+logit=   18.4244 id= 37378 text='numbers'
+logit=   18.3137 id= 27237 text='Numbers'
+logit=   18.1453 id=   756 text='",\n'
+logit=   17.4568 id=  5500 text='_number'
+logit=   17.3670 id= 34713 text=' Numbers'
+logit=   17.1940 id= 88819 text='_both'
+logit=   16.4669 id= 47207 text='(numbers'
+logit=   16.4392 id= 33500 text='_strings'
+logit=   16.3555 id= 18263 text='_parameters'
+logit=   16.2561 id=  9146 text='_values'
+logit=   16.2515 id=    62 text='_'
+logit=   15.9856 id= 50016 text='_three'
+logit=   15.7867 id= 67330 text='_letters'
+logit=   15.1398 id=   698 text='"\n'
+logit=   14.9409 id=  4273 text='_num'
+logit=   14.7294 id=   261 text='er'
+================================================================================
+
+--------------------------------------------------------------------------------
+CLOSED GRAMMAR STATE
+--------------------------------------------------------------------------------
+Grammar: TrieGrammar
+Generated IDs: [8822, 2891]
+Allowed IDs: [32964]
+Trie complete: False
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CLOSED GRAMMAR CANDIDATES
+--------------------------------------------------------------------------------
+logit=   32.7804 id= 32964 text='_numbers'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CHOSEN TOKEN
+--------------------------------------------------------------------------------
+id:       32964
+text:     '_numbers'
+logit:    32.7804
+status:   complete
+previous: 'fn_add'
+new:      'fn_add_numbers'
+--------------------------------------------------------------------------------
+GENERATED NOW: 'fn_add_numbers'
+GRAMMAR COMPLETE
+
+================================================================================
+FINAL CONSTRAINED GENERATION
+================================================================================
+'fn_add_numbers'
+Token IDs: [8822, 2891, 32964]
+================================================================================
+
+================================================================================
+CONTEXT AFTER FUNCTION SELECTION
+================================================================================
+You are a function calling assistant. Read the user's request and choose exactly one function from the list that best fulfils it.
+
+Available functions:
+- fn_add_numbers(a: number, b: number): Add two numbers together and return their sum.
+- fn_greet(name: string): Generate a greeting message for a person by name.
+- fn_reverse_string(s: string): Reverse a string and return the reversed result.
+- fn_get_square_root(a: number): Calculate the square root of a number.
+- fn_substitute_string_with_regex(source_string: string, regex: string, replacement: string): Replace all occurrences matching a regex pattern in a string.
+
+User request: "What is the sum of 2 and 3?"
+
+Respond with a single JSON object describing the function call.
+Function call: {"name": "fn_add_numbers", 
+================================================================================
+
+================================================================================
+PARAMETER CONTEXT
+================================================================================
+You are a function calling assistant. Read the user's request and choose exactly one function from the list that best fulfils it.
+
+Available functions:
+- fn_add_numbers(a: number, b: number): Add two numbers together and return their sum.
+- fn_greet(name: string): Generate a greeting message for a person by name.
+- fn_reverse_string(s: string): Reverse a string and return the reversed result.
+- fn_get_square_root(a: number): Calculate the square root of a number.
+- fn_substitute_string_with_regex(source_string: string, regex: string, replacement: string): Replace all occurrences matching a regex pattern in a string.
+
+User request: "What is the sum of 2 and 3?"
+
+Respond with a single JSON object describing the function call.
+Function call: {"name": "fn_add_numbers", "parameters": {"a": 
+
+PARAMETER EXTRACTION TASK
+
+Your job is NOT to answer the user's request.
+Your job is NOT to perform the function.
+Your job is NOT to explain anything.
+
+Extract the value for exactly this function parameter from the original user request.
+
+Parameter name: a
+Parameter type: number
+Parameter description: The value of the a parameter required by the selected function.
+
+Rules:
+1. Extract the value directly from the user's request.
+2. Use the meaning of the parameter to identify the correct part of the request.
+3. Do not answer, calculate, transform, summarize, or execute the user's request.
+4. Do not invent a value that is not supported by the request.
+5. Output only the value of this parameter.
+
+JSON value: 
+================================================================================
+
+================================================================================
+DECODING STEP 0
+================================================================================
+Generated:
+''
+Generated token IDs:
+[]
+Input token IDs:
+[2610, 525, 264, 729, 8098, 17847, 13, 4457, 279, 1196, 594, 1681, 323, 5157, 6896, 825, 729, 504, 279, 1140, 429, 1850, 5599, 69, 8669, 432, 382, 16485, 5746, 510, 12, 5168, 2891, 32964, 2877, 25, 1372, 11, 293, 25, 1372, 1648, 2691, 1378, 5109, 3786, 323, 470, 862, 2629, 624, 12, 5168, 1889, 3744, 3153, 25, 914, 1648, 19813, 264, 42113, 1943, 369, 264, 1697, 553, 829, 624, 12, 5168, 43277, 3904, 1141, 25, 914, 1648, 24277, 264, 914, 323, 470, 279, 27437, 1102, 624, 12, 5168, 3062, 39794, 12993, 2877, 25, 1372, 1648, 20517, 279, 9334, 3704, 315, 264, 1372, 624, 12, 5168, 5228, 7660, 3904, 6615, 41832, 12437, 3904, 25, 914, 11, 20180, 25, 914, 11, 13723, 25, 914, 1648, 29558, 678, 56015, 12579, 264, 20180, 5383, 304, 264, 914, 382, 1474, 1681, 25, 330, 3838, 374, 279, 2629, 315, 220, 17, 323, 220, 18, 11974, 65354, 448, 264, 3175, 4718, 1633, 22692, 279, 729, 1618, 624, 5152, 1618, 25, 5212, 606, 788, 330, 8822, 2891, 32964, 497, 330, 13786, 788, 5212, 64, 788, 4710, 20198, 20243, 65393, 3580, 42979, 271, 7771, 2618, 374, 4183, 311, 4226, 279, 1196, 594, 1681, 624, 7771, 2618, 374, 4183, 311, 2736, 279, 729, 624, 7771, 2618, 374, 4183, 311, 10339, 4113, 382, 28959, 279, 897, 369, 6896, 419, 729, 5733, 504, 279, 4024, 1196, 1681, 382, 4971, 829, 25, 264, 198, 4971, 943, 25, 1372, 198, 4971, 4008, 25, 576, 897, 315, 279, 264, 5733, 2567, 553, 279, 4091, 729, 382, 26008, 510, 16, 13, 22826, 279, 897, 5961, 504, 279, 1196, 594, 1681, 624, 17, 13, 5443, 279, 7290, 315, 279, 5733, 311, 10542, 279, 4396, 949, 315, 279, 1681, 624, 18, 13, 3155, 537, 4226, 11, 11047, 11, 5165, 11, 62079, 11, 476, 9026, 279, 1196, 594, 1681, 624, 19, 13, 3155, 537, 17023, 264, 897, 429, 374, 537, 7248, 553, 279, 1681, 624, 20, 13, 9258, 1172, 279, 897, 315, 419, 5733, 382, 5370, 897, 25, 220]
+
+================================================================================
+RAW MODEL TOP TOKENS
+================================================================================
+logit=   20.4212 id=    17 text='2'
+logit=   18.2169 id=    19 text='4'
+logit=   16.5899 id=    20 text='5'
+logit=   16.1663 id=  5212 text=' {"'
+logit=   15.8297 id=   330 text=' "'
+logit=   15.8245 id=   314 text=' {'
+logit=   15.4473 id=   264 text=' a'
+logit=   15.3910 id=    18 text='3'
+logit=   14.8963 id=    15 text='0'
+logit=   14.7813 id=   341 text=' {\n'
+logit=   14.6579 id=    16 text='1'
+logit=   14.6436 id= 23754 text=' ?\n\n'
+logit=   14.6433 id=   320 text=' ('
+logit=   14.0743 id=   220 text=' '
+logit=   14.0186 id=    21 text='6'
+logit=   13.6314 id=   576 text=' The'
+logit=   13.5763 id=   279 text=' the'
+logit=   13.5502 id= 22746 text=' "\n\n'
+logit=   13.1502 id=  5360 text=" {'"
+logit=   13.1231 id= 17607 text=' ?\n'
+================================================================================
+
+--------------------------------------------------------------------------------
+DYNAMIC GRAMMAR DECISION
+--------------------------------------------------------------------------------
+Grammar: NumberGrammar
+Context tail:
+"e original user request.\n\nParameter name: a\nParameter type: number\nParameter description: The value of the a parameter required by the selected function.\n\nRules:\n1. Extract the value directly from the user's request.\n2. Use the meaning of the parameter to identify the correct part of the request.\n3. Do not answer, calculate, transform, summarize, or execute the user's request.\n4. Do not invent a value that is not supported by the request.\n5. Output only the value of this parameter.\n\nJSON value: "
+Generated so far:
+''
+Vocabulary size: 151669
+Invalid candidates: 151644
+Empty-token candidates: 14
+Valid candidates: 11
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+TOP VALID DYNAMIC CANDIDATES
+--------------------------------------------------------------------------------
+logit=   20.4212 id=    17 text='2'                            status=continue
+logit=   18.2169 id=    19 text='4'                            status=continue
+logit=   16.5899 id=    20 text='5'                            status=continue
+logit=   15.3910 id=    18 text='3'                            status=continue
+logit=   14.8963 id=    15 text='0'                            status=continue
+logit=   14.6579 id=    16 text='1'                            status=continue
+logit=   14.0186 id=    21 text='6'                            status=continue
+logit=   12.9401 id=    22 text='7'                            status=continue
+logit=   12.2820 id=    23 text='8'                            status=continue
+logit=   11.4707 id=    24 text='9'                            status=continue
+logit=   -2.9745 id=    12 text='-'                            status=continue
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CHOSEN DYNAMIC TOKEN
+--------------------------------------------------------------------------------
+id:       17
+text:     '2'
+logit:    20.4212
+status:   continue
+previous: ''
+new:      '2'
+--------------------------------------------------------------------------------
+
+================================================================================
+DECODING STEP 1
+================================================================================
+Generated:
+'2'
+Generated token IDs:
+[17]
+Input token IDs:
+[2610, 525, 264, 729, 8098, 17847, 13, 4457, 279, 1196, 594, 1681, 323, 5157, 6896, 825, 729, 504, 279, 1140, 429, 1850, 5599, 69, 8669, 432, 382, 16485, 5746, 510, 12, 5168, 2891, 32964, 2877, 25, 1372, 11, 293, 25, 1372, 1648, 2691, 1378, 5109, 3786, 323, 470, 862, 2629, 624, 12, 5168, 1889, 3744, 3153, 25, 914, 1648, 19813, 264, 42113, 1943, 369, 264, 1697, 553, 829, 624, 12, 5168, 43277, 3904, 1141, 25, 914, 1648, 24277, 264, 914, 323, 470, 279, 27437, 1102, 624, 12, 5168, 3062, 39794, 12993, 2877, 25, 1372, 1648, 20517, 279, 9334, 3704, 315, 264, 1372, 624, 12, 5168, 5228, 7660, 3904, 6615, 41832, 12437, 3904, 25, 914, 11, 20180, 25, 914, 11, 13723, 25, 914, 1648, 29558, 678, 56015, 12579, 264, 20180, 5383, 304, 264, 914, 382, 1474, 1681, 25, 330, 3838, 374, 279, 2629, 315, 220, 17, 323, 220, 18, 11974, 65354, 448, 264, 3175, 4718, 1633, 22692, 279, 729, 1618, 624, 5152, 1618, 25, 5212, 606, 788, 330, 8822, 2891, 32964, 497, 330, 13786, 788, 5212, 64, 788, 4710, 20198, 20243, 65393, 3580, 42979, 271, 7771, 2618, 374, 4183, 311, 4226, 279, 1196, 594, 1681, 624, 7771, 2618, 374, 4183, 311, 2736, 279, 729, 624, 7771, 2618, 374, 4183, 311, 10339, 4113, 382, 28959, 279, 897, 369, 6896, 419, 729, 5733, 504, 279, 4024, 1196, 1681, 382, 4971, 829, 25, 264, 198, 4971, 943, 25, 1372, 198, 4971, 4008, 25, 576, 897, 315, 279, 264, 5733, 2567, 553, 279, 4091, 729, 382, 26008, 510, 16, 13, 22826, 279, 897, 5961, 504, 279, 1196, 594, 1681, 624, 17, 13, 5443, 279, 7290, 315, 279, 5733, 311, 10542, 279, 4396, 949, 315, 279, 1681, 624, 18, 13, 3155, 537, 4226, 11, 11047, 11, 5165, 11, 62079, 11, 476, 9026, 279, 1196, 594, 1681, 624, 19, 13, 3155, 537, 17023, 264, 897, 429, 374, 537, 7248, 553, 279, 1681, 624, 20, 13, 9258, 1172, 279, 897, 315, 419, 5733, 382, 5370, 897, 25, 220, 17]
+
+================================================================================
+RAW MODEL TOP TOKENS
+================================================================================
+logit=   21.3203 id=   198 text='\n'
+logit=   20.6110 id=   271 text='\n\n'
+logit=   19.2046 id=   320 text=' ('
+logit=   18.3326 id=   476 text=' or'
+logit=   18.0686 id=    13 text='.'
+logit=   17.9098 id=    11 text=','
+logit=   17.1183 id=   624 text='.\n'
+logit=   17.1142 id=  4710 text=' \n\n'
+logit=   17.0764 id=   382 text='.\n\n'
+logit=   16.9639 id=   323 text=' and'
+logit=   16.4144 id=   715 text=' \n'
+logit=   16.2875 id=   438 text=' as'
+logit=   16.1032 id=   374 text=' is'
+logit=   16.0985 id=  1939 text='?\n\n'
+logit=   15.9829 id=  5267 text='?\n'
+logit=   15.8856 id=  2726 text=' OR'
+logit=   15.6183 id= 23754 text=' ?\n\n'
+logit=   15.5933 id=   488 text=' +'
+logit=   15.4348 id=    30 text='?'
+logit=   15.0892 id=    25 text=':'
+================================================================================
+
+--------------------------------------------------------------------------------
+DYNAMIC GRAMMAR DECISION
+--------------------------------------------------------------------------------
+Grammar: NumberGrammar
+Context tail:
+" original user request.\n\nParameter name: a\nParameter type: number\nParameter description: The value of the a parameter required by the selected function.\n\nRules:\n1. Extract the value directly from the user's request.\n2. Use the meaning of the parameter to identify the correct part of the request.\n3. Do not answer, calculate, transform, summarize, or execute the user's request.\n4. Do not invent a value that is not supported by the request.\n5. Output only the value of this parameter.\n\nJSON value: 2"
+Generated so far:
+'2'
+Vocabulary size: 151669
+Invalid candidates: 151621
+Empty-token candidates: 14
+Valid candidates: 34
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+TOP VALID DYNAMIC CANDIDATES
+--------------------------------------------------------------------------------
+logit=   18.0686 id=    13 text='.'                            status=continue
+logit=   17.9098 id=    11 text=','                            status=complete
+logit=   13.4006 id=    15 text='0'                            status=continue
+logit=   13.2154 id=    19 text='4'                            status=continue
+logit=   12.6374 id=    24 text='9'                            status=continue
+logit=   12.4410 id=    18 text='3'                            status=continue
+logit=   12.4399 id=    17 text='2'                            status=continue
+logit=   12.3564 id=    20 text='5'                            status=continue
+logit=   11.8972 id=    16 text='1'                            status=continue
+logit=   11.4140 id=    23 text='8'                            status=continue
+logit=   10.9438 id=    92 text='}'                            status=complete
+logit=   10.4807 id=    21 text='6'                            status=continue
+logit=   10.4785 id=    22 text='7'                            status=continue
+logit=    8.9034 id=    68 text='e'                            status=continue
+logit=    8.2534 id=    60 text=']'                            status=complete
+logit=    8.1413 id=    36 text='E'                            status=continue
+logit=    4.6196 id= 29456 text='²'                            status=continue
+logit=    3.2863 id= 43201 text='³'                            status=continue
+logit=    2.9683 id= 59497 text='¹'                            status=continue
+logit=    2.8590 id= 31807 text='₂'                            status=continue
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CHOSEN DYNAMIC TOKEN
+--------------------------------------------------------------------------------
+id:       13
+text:     '.'
+logit:    18.0686
+status:   continue
+previous: '2'
+new:      '2.'
+--------------------------------------------------------------------------------
+
+================================================================================
+DECODING STEP 2
+================================================================================
+Generated:
+'2.'
+Generated token IDs:
+[17, 13]
+Input token IDs:
+[2610, 525, 264, 729, 8098, 17847, 13, 4457, 279, 1196, 594, 1681, 323, 5157, 6896, 825, 729, 504, 279, 1140, 429, 1850, 5599, 69, 8669, 432, 382, 16485, 5746, 510, 12, 5168, 2891, 32964, 2877, 25, 1372, 11, 293, 25, 1372, 1648, 2691, 1378, 5109, 3786, 323, 470, 862, 2629, 624, 12, 5168, 1889, 3744, 3153, 25, 914, 1648, 19813, 264, 42113, 1943, 369, 264, 1697, 553, 829, 624, 12, 5168, 43277, 3904, 1141, 25, 914, 1648, 24277, 264, 914, 323, 470, 279, 27437, 1102, 624, 12, 5168, 3062, 39794, 12993, 2877, 25, 1372, 1648, 20517, 279, 9334, 3704, 315, 264, 1372, 624, 12, 5168, 5228, 7660, 3904, 6615, 41832, 12437, 3904, 25, 914, 11, 20180, 25, 914, 11, 13723, 25, 914, 1648, 29558, 678, 56015, 12579, 264, 20180, 5383, 304, 264, 914, 382, 1474, 1681, 25, 330, 3838, 374, 279, 2629, 315, 220, 17, 323, 220, 18, 11974, 65354, 448, 264, 3175, 4718, 1633, 22692, 279, 729, 1618, 624, 5152, 1618, 25, 5212, 606, 788, 330, 8822, 2891, 32964, 497, 330, 13786, 788, 5212, 64, 788, 4710, 20198, 20243, 65393, 3580, 42979, 271, 7771, 2618, 374, 4183, 311, 4226, 279, 1196, 594, 1681, 624, 7771, 2618, 374, 4183, 311, 2736, 279, 729, 624, 7771, 2618, 374, 4183, 311, 10339, 4113, 382, 28959, 279, 897, 369, 6896, 419, 729, 5733, 504, 279, 4024, 1196, 1681, 382, 4971, 829, 25, 264, 198, 4971, 943, 25, 1372, 198, 4971, 4008, 25, 576, 897, 315, 279, 264, 5733, 2567, 553, 279, 4091, 729, 382, 26008, 510, 16, 13, 22826, 279, 897, 5961, 504, 279, 1196, 594, 1681, 624, 17, 13, 5443, 279, 7290, 315, 279, 5733, 311, 10542, 279, 4396, 949, 315, 279, 1681, 624, 18, 13, 3155, 537, 4226, 11, 11047, 11, 5165, 11, 62079, 11, 476, 9026, 279, 1196, 594, 1681, 624, 19, 13, 3155, 537, 17023, 264, 897, 429, 374, 537, 7248, 553, 279, 1681, 624, 20, 13, 9258, 1172, 279, 897, 315, 419, 5733, 382, 5370, 897, 25, 220, 17, 13]
+
+================================================================================
+RAW MODEL TOP TOKENS
+================================================================================
+logit=   20.7775 id=    15 text='0'
+logit=   18.2540 id=   320 text=' ('
+logit=   17.7915 id=    20 text='5'
+logit=   17.7827 id=  4710 text=' \n\n'
+logit=   16.9810 id=   715 text=' \n'
+logit=   16.5162 id=    19 text='4'
+logit=   16.2642 id=    23 text='8'
+logit=   16.2096 id=    18 text='3'
+logit=   16.1746 id=  1988 text=' But'
+logit=   16.1363 id=  8278 text=' Only'
+logit=   16.0723 id=   576 text=' The'
+logit=   15.9049 id=    24 text='9'
+logit=   15.8701 id=    16 text='1'
+logit=   15.7834 id=  2055 text=' So'
+logit=   15.7620 id=    17 text='2'
+logit=   15.6571 id=   220 text=' '
+logit=   15.5382 id=  7281 text=' Also'
+logit=   15.4300 id=    21 text='6'
+logit=   15.3702 id=  5209 text=' Please'
+logit=   15.3594 id=  1416 text=' If'
+================================================================================
+
+--------------------------------------------------------------------------------
+DYNAMIC GRAMMAR DECISION
+--------------------------------------------------------------------------------
+Grammar: NumberGrammar
+Context tail:
+"original user request.\n\nParameter name: a\nParameter type: number\nParameter description: The value of the a parameter required by the selected function.\n\nRules:\n1. Extract the value directly from the user's request.\n2. Use the meaning of the parameter to identify the correct part of the request.\n3. Do not answer, calculate, transform, summarize, or execute the user's request.\n4. Do not invent a value that is not supported by the request.\n5. Output only the value of this parameter.\n\nJSON value: 2."
+Generated so far:
+'2.'
+Vocabulary size: 151669
+Invalid candidates: 151627
+Empty-token candidates: 14
+Valid candidates: 28
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+TOP VALID DYNAMIC CANDIDATES
+--------------------------------------------------------------------------------
+logit=   20.7775 id=    15 text='0'                            status=continue
+logit=   17.7915 id=    20 text='5'                            status=continue
+logit=   16.5162 id=    19 text='4'                            status=continue
+logit=   16.2642 id=    23 text='8'                            status=continue
+logit=   16.2096 id=    18 text='3'                            status=continue
+logit=   15.9049 id=    24 text='9'                            status=continue
+logit=   15.8701 id=    16 text='1'                            status=continue
+logit=   15.7620 id=    17 text='2'                            status=continue
+logit=   15.4300 id=    21 text='6'                            status=continue
+logit=   14.7484 id=    22 text='7'                            status=continue
+logit=    6.6686 id= 26022 text='０'                            status=continue
+logit=    6.6171 id= 89669 text='₀'                            status=continue
+logit=    4.4118 id= 31807 text='₂'                            status=continue
+logit=    4.1819 id= 43497 text='５'                            status=continue
+logit=    4.0809 id= 59497 text='¹'                            status=continue
+logit=    3.8972 id= 43201 text='³'                            status=continue
+logit=    3.8494 id= 29456 text='²'                            status=continue
+logit=    3.1718 id= 30986 text='₁'                            status=continue
+logit=    3.0282 id= 66993 text='９'                            status=continue
+logit=    2.9211 id= 45602 text='４'                            status=continue
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CHOSEN DYNAMIC TOKEN
+--------------------------------------------------------------------------------
+id:       15
+text:     '0'
+logit:    20.7775
+status:   continue
+previous: '2.'
+new:      '2.0'
+--------------------------------------------------------------------------------
+
+================================================================================
+DECODING STEP 3
+================================================================================
+Generated:
+'2.0'
+Generated token IDs:
+[17, 13, 15]
+Input token IDs:
+[2610, 525, 264, 729, 8098, 17847, 13, 4457, 279, 1196, 594, 1681, 323, 5157, 6896, 825, 729, 504, 279, 1140, 429, 1850, 5599, 69, 8669, 432, 382, 16485, 5746, 510, 12, 5168, 2891, 32964, 2877, 25, 1372, 11, 293, 25, 1372, 1648, 2691, 1378, 5109, 3786, 323, 470, 862, 2629, 624, 12, 5168, 1889, 3744, 3153, 25, 914, 1648, 19813, 264, 42113, 1943, 369, 264, 1697, 553, 829, 624, 12, 5168, 43277, 3904, 1141, 25, 914, 1648, 24277, 264, 914, 323, 470, 279, 27437, 1102, 624, 12, 5168, 3062, 39794, 12993, 2877, 25, 1372, 1648, 20517, 279, 9334, 3704, 315, 264, 1372, 624, 12, 5168, 5228, 7660, 3904, 6615, 41832, 12437, 3904, 25, 914, 11, 20180, 25, 914, 11, 13723, 25, 914, 1648, 29558, 678, 56015, 12579, 264, 20180, 5383, 304, 264, 914, 382, 1474, 1681, 25, 330, 3838, 374, 279, 2629, 315, 220, 17, 323, 220, 18, 11974, 65354, 448, 264, 3175, 4718, 1633, 22692, 279, 729, 1618, 624, 5152, 1618, 25, 5212, 606, 788, 330, 8822, 2891, 32964, 497, 330, 13786, 788, 5212, 64, 788, 4710, 20198, 20243, 65393, 3580, 42979, 271, 7771, 2618, 374, 4183, 311, 4226, 279, 1196, 594, 1681, 624, 7771, 2618, 374, 4183, 311, 2736, 279, 729, 624, 7771, 2618, 374, 4183, 311, 10339, 4113, 382, 28959, 279, 897, 369, 6896, 419, 729, 5733, 504, 279, 4024, 1196, 1681, 382, 4971, 829, 25, 264, 198, 4971, 943, 25, 1372, 198, 4971, 4008, 25, 576, 897, 315, 279, 264, 5733, 2567, 553, 279, 4091, 729, 382, 26008, 510, 16, 13, 22826, 279, 897, 5961, 504, 279, 1196, 594, 1681, 624, 17, 13, 5443, 279, 7290, 315, 279, 5733, 311, 10542, 279, 4396, 949, 315, 279, 1681, 624, 18, 13, 3155, 537, 4226, 11, 11047, 11, 5165, 11, 62079, 11, 476, 9026, 279, 1196, 594, 1681, 624, 19, 13, 3155, 537, 17023, 264, 897, 429, 374, 537, 7248, 553, 279, 1681, 624, 20, 13, 9258, 1172, 279, 897, 315, 419, 5733, 382, 5370, 897, 25, 220, 17, 13, 15]
+
+================================================================================
+RAW MODEL TOP TOKENS
+================================================================================
+logit=   21.2955 id=   198 text='\n'
+logit=   20.6533 id=   271 text='\n\n'
+logit=   18.8883 id=   320 text=' ('
+logit=   18.5086 id=   476 text=' or'
+logit=   17.8514 id= 23754 text=' ?\n\n'
+logit=   17.8280 id=    11 text=','
+logit=   17.6782 id=  5267 text='?\n'
+logit=   17.5948 id=  1939 text='?\n\n'
+logit=   17.3434 id= 17607 text=' ?\n'
+logit=   17.1468 id=    30 text='?'
+logit=   16.8555 id=  4710 text=' \n\n'
+logit=   16.5953 id=   438 text=' as'
+logit=   15.8720 id=   421 text=' if'
+logit=   15.8525 id=   937 text=' ?'
+logit=   15.6748 id=   715 text=' \n'
+logit=   15.6525 id=   624 text='.\n'
+logit=   15.5537 id=   382 text='.\n\n'
+logit=   15.3988 id=    15 text='0'
+logit=   15.3596 id=   369 text=' for'
+logit=   15.3366 id=    13 text='.'
+================================================================================
+
+--------------------------------------------------------------------------------
+DYNAMIC GRAMMAR DECISION
+--------------------------------------------------------------------------------
+Grammar: NumberGrammar
+Context tail:
+"riginal user request.\n\nParameter name: a\nParameter type: number\nParameter description: The value of the a parameter required by the selected function.\n\nRules:\n1. Extract the value directly from the user's request.\n2. Use the meaning of the parameter to identify the correct part of the request.\n3. Do not answer, calculate, transform, summarize, or execute the user's request.\n4. Do not invent a value that is not supported by the request.\n5. Output only the value of this parameter.\n\nJSON value: 2.0"
+Generated so far:
+'2.0'
+Vocabulary size: 151669
+Invalid candidates: 151622
+Empty-token candidates: 14
+Valid candidates: 33
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+TOP VALID DYNAMIC CANDIDATES
+--------------------------------------------------------------------------------
+logit=   17.8280 id=    11 text=','                            status=complete
+logit=   15.3988 id=    15 text='0'                            status=continue
+logit=   11.7243 id=    16 text='1'                            status=continue
+logit=   11.2891 id=    19 text='4'                            status=continue
+logit=   10.8851 id=    17 text='2'                            status=continue
+logit=   10.8661 id=    20 text='5'                            status=continue
+logit=   10.7818 id=    24 text='9'                            status=continue
+logit=   10.6510 id=    92 text='}'                            status=complete
+logit=   10.5332 id=    18 text='3'                            status=continue
+logit=   10.3128 id=    60 text=']'                            status=complete
+logit=   10.2295 id=    68 text='e'                            status=continue
+logit=   10.1065 id=    21 text='6'                            status=continue
+logit=    9.9030 id=    23 text='8'                            status=continue
+logit=    9.8962 id=    36 text='E'                            status=continue
+logit=    9.7797 id=    22 text='7'                            status=continue
+logit=    3.1295 id= 89669 text='₀'                            status=continue
+logit=    2.9538 id= 29456 text='²'                            status=continue
+logit=    2.9221 id= 31807 text='₂'                            status=continue
+logit=    2.4897 id= 26022 text='０'                            status=continue
+logit=    1.8543 id= 30986 text='₁'                            status=continue
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+CHOSEN DYNAMIC TOKEN
+--------------------------------------------------------------------------------
+id:       11
+text:     ','
+logit:    17.8280
+status:   complete
+previous: '2.0'
+new:      '2.0,'
+--------------------------------------------------------------------------------
+GRAMMAR COMPLETE
+
+================================================================================
+FINAL CONSTRAINED GENERATION
+================================================================================
+'2.0,'
+Token IDs: [17, 13, 15, 11]
+================================================================================
+What is the sum of 265 and 345?
