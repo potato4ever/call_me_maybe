@@ -1,3 +1,4 @@
-import re
-s = re.findall(r"a|e|i|o|u", 'Programming is fun')
-print(s)
+import numpy as np 
+p = np.asarray([1,2,3], dtype=np.int64)
+print(p[[1,0]])
+print(np.argmax(p))

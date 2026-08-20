@@ -210,7 +210,6 @@ def _is_number_prefix(text: str) -> bool:
 
         if i < n and text[i] in "+-":
             i += 1
-
         if i == n:
             return True
 
@@ -350,22 +349,20 @@ class TrieGrammar:
         return token
 
     def check(self, so_far: str, token: str) -> GrammarStatus:
-        if not token:
-            return "invalid"
-
         candidate = so_far + token
-
         for option in self._options:
-            if option.startswith(candidate):
-                if option == candidate:
+            if candidate.endswith("\""):
+                if candidate[:-1] in self._options:
                     return "complete"
-
-                return "continue"
-
-        return "invalid"
+                else:
+                    return "invalid"
+        return "continue"
 
     def is_complete(self, so_far: str) -> bool:
-        return so_far in self._options
+        return (
+            so_far.endswith('"')
+            and so_far[:-1] in self._options
+        )
 
     def force_close(self, so_far: str) -> str:
         for option in self._options:

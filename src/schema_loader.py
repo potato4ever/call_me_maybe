@@ -13,6 +13,14 @@ from .models import FunctionDefinition, PromptEntry
 class ConfigError(Exception):
     """Raised when an input configuration file is missing, unreadable, or invalid."""
 
+def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any]= {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate key: {key}")
+        result[key] = value
+    return result
+
 
 def _load_json_array(path: str) -> List[Any]:
     """Read *path* and return its parsed JSON content, guaranteed to be a list.
@@ -28,11 +36,13 @@ def _load_json_array(path: str) -> List[Any]:
         raw_text = file_path.read_text(encoding="utf-8")
     except OSError as exc:
         raise ConfigError(f"could not read {path}: {exc}") from exc
-
     try:
-        data = json.loads(raw_text)
+        data = json.loads(raw_text, object_pairs_hook=reject_duplicates)
     except json.JSONDecodeError as exc:
         raise ConfigError(f"invalid JSON in {path}: {exc}") from exc
+    except ValueError as exc:
+        raise ConfigError(f"invalid JSON in {path}: {exc}") from exc
+
 
     if not isinstance(data, list):
         raise ConfigError(f"{path} must contain a JSON array at the top level")

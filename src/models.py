@@ -2,7 +2,7 @@
 # ABOUTME: These models give us free validation and clear error messages on malformed input.
 
 from typing import Dict, Union
-
+import keyword
 from pydantic import BaseModel, ConfigDict, field_validator
 
 #: Parameter/return types we know how to constrained-decode.
@@ -12,7 +12,7 @@ SUPPORTED_TYPES = {"number", "integer", "string", "boolean", "bool"}
 class ParameterType(BaseModel):
     """Describes the JSON-schema-like type of a single parameter or return value."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     type: str
 
@@ -29,18 +29,24 @@ class ParameterType(BaseModel):
 class FunctionDefinition(BaseModel):
     """A single callable function, as described in functions_definition.json."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     name: str
     description: str
     parameters: Dict[str, ParameterType]
     returns: ParameterType
+    @field_validator("name")
+    @classmethod
+    def check_name(cls, value: str) -> str:
+        if not value.isidentifier() or keyword.iskeyword(value):
+            raise ValueError("invalid functoin name")
+        return value
 
 
 class PromptEntry(BaseModel):
     """A single natural-language request, as described in function_calling_tests.json."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     prompt: str
 

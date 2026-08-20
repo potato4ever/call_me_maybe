@@ -1,0 +1,750 @@
+# ABOUTME: Extracts function metadata (name, description, params, return type) for JSON export.
+# ABOUTME: Used to generate function definitions that students receive as input.
+
+import json
+from typing import Dict, List, Callable, get_type_hints
+
+from pydantic import BaseModel
+
+from moulinette.functions_definition import get_functions_by_visibility
+
+
+# Map Python types to JSON schema types
+TYPE_MAP = {
+    "int": "integer",
+    "float": "number",
+    "str": "string",
+    "bool": "boolean",
+    "list": "array",
+    "dict": "object",
+}
+
+
+class ParameterInfo(BaseModel):
+    type: str
+
+
+class FunctionInfo(BaseModel):
+    name: str
+    description: str
+    parameters: Dict[str, ParameterInfo]
+    returns: ParameterInfo
+
+
+def extract_function_info(fn: Callable) -> FunctionInfo:
+    """Extract metadata from a function object including docstring."""
+    # Get function name
+    name = fn.__name__
+
+    # Get docstring (first line only, strip whitespace)
+    description = ""
+    if fn.__doc__:
+        description = fn.__doc__.strip().split("\n")[0]
+
+    # Get argument names from signature
+    args_names = list(fn.__code__.co_varnames[:fn.__code__.co_argcount])
+
+    # Get type hints including return type
+    type_hints = get_type_hints(fn)
+
+    # Get return type
+    return_type_raw = type_hints.pop('return', str).__name__
+    return_type = TYPE_MAP.get(return_type_raw, "string")
+
+    # Build parameters dict
+    parameters = {}
+    for arg_name in args_names:
+        if arg_name in type_hints:
+            type_raw = type_hints[arg_name].__name__
+            param_type = TYPE_MAP.get(type_raw, "string")
+            parameters[arg_name] = ParameterInfo(type=param_type)
+
+    return FunctionInfo(
+        name=name,
+        description=description,
+        parameters=parameters,
+        returns=ParameterInfo(type=return_type)
+    )
+
+
+def generate_function_calling_definition(
+    output_json_path: str,
+    visibility: str = "public",
+) -> None:
+    """Generate function definitions JSON file for a given visibility set.
+
+    Args:
+        output_json_path: Path where the JSON file will be written
+        visibility: Either "public" or "private" to filter functions
+    """
+    # Get functions filtered by visibility
+    functions = get_functions_by_visibility(visibility)
+
+    # Extract info from each function
+    function_infos = [extract_function_info(fn) for fn in functions]
+
+    # Convert to dict format for JSON
+    function_infos_list = [fn.model_dump() for fn in function_infos]
+
+    with open(output_json_path, "w") as f:
+        json.dump(function_infos_list, f, indent=2)
+# ABOUTME: Defines all functions available for the function calling exercise.
+# ABOUTME: Includes visibility metadata (public/private) and test cases for each function.
+
+import math
+from typing import Callable, Any
+
+
+# =============================================================================
+# PUBLIC FUNCTIONS - given to students for practice
+# =============================================================================
+
+def fn_add_numbers(a: float, b: float) -> float:
+    """Add two numbers together and return their sum."""
+    assert isinstance(a, float)
+    assert isinstance(b, float)
+    return a + b
+
+
+def fn_greet(name: str) -> str:
+    """Generate a greeting message for a person by name."""
+    assert isinstance(name, str)
+    return f"Hello, {name}!"
+
+
+def fn_reverse_string(s: str) -> str:
+    """Reverse a string and return the reversed result."""
+    assert isinstance(s, str)
+    return s[::-1]
+
+
+def fn_get_square_root(a: float) -> float:
+    """Calculate the square root of a number."""
+    assert isinstance(a, float)
+    return math.sqrt(a)
+
+
+def fn_substitute_string_with_regex(source_string: str, regex: str, replacement: str) -> str:
+    """Replace all occurrences matching a regex pattern in a string."""
+    import re
+    assert isinstance(source_string, str)
+    assert isinstance(regex, str)
+    assert isinstance(replacement, str)
+    return re.sub(regex, replacement, source_string)
+
+
+# =============================================================================
+# PRIVATE FUNCTIONS - used for grading, not shown to students
+# =============================================================================
+
+def fn_multiply_numbers(a: float, b: float) -> float:
+    """Multiply two numbers together and return their product."""
+    assert isinstance(a, float)
+    assert isinstance(b, float)
+    return a * b
+
+
+def fn_is_even(n: int) -> bool:
+    """Check if an integer is even, returns True if even, False if odd."""
+    assert isinstance(n, int)
+    return n % 2 == 0
+
+
+def fn_calculate_compound_interest(principal: float, rate: float, years: int) -> float:
+    """Calculate compound interest: principal * (1 + rate)^years."""
+    assert isinstance(principal, float)
+    assert isinstance(rate, float)
+    assert isinstance(years, int)
+    return principal * ((1 + rate) ** years)
+
+
+def fn_execute_sql_query(query: str, database: str) -> str:
+    """Execute a SQL query on a specified database."""
+    assert isinstance(query, str)
+    assert isinstance(database, str)
+    return f"Executing on {database}: {query}"
+
+
+def fn_read_file(path: str, encoding: str) -> str:
+    """Read a file from the given path with specified encoding."""
+    assert isinstance(path, str)
+    assert isinstance(encoding, str)
+    return f"Reading {path} with {encoding}"
+
+
+def fn_format_template(template: str) -> str:
+    """Format a template string containing placeholders."""
+    assert isinstance(template, str)
+    return f"Template: {template}"
+
+
+# =============================================================================
+# EXERCISES DICTIONARY
+# Keys are function objects, values include visibility and test cases
+# =============================================================================
+
+exercises: dict[Callable, dict[str, Any]] = {
+    # --- PUBLIC FUNCTIONS (11 tests) ---
+    fn_add_numbers: {
+        "visibility": "public",
+        "tests": [
+            {"prompt": "What is the sum of 2 and 3?", "fn_args": {"a": 2., "b": 3.}},
+            {"prompt": "What is the sum of 265 and 345?", "fn_args": {"a": 265., "b": 345.}},
+        ]
+    },
+    fn_greet: {
+        "visibility": "public",
+        "tests": [
+            {"prompt": "Greet shrek", "fn_args": {"name": "shrek"}},
+            {"prompt": "Greet john", "fn_args": {"name": "john"}},
+        ]
+    },
+    fn_reverse_string: {
+        "visibility": "public",
+        "tests": [
+            {"prompt": "Reverse the string 'hello'", "fn_args": {"s": "hello"}},
+            {"prompt": "Reverse the string 'world'", "fn_args": {"s": "world"}},
+        ]
+    },
+    fn_get_square_root: {
+        "visibility": "public",
+        "tests": [
+            {"prompt": "What is the square root of 16?", "fn_args": {"a": 16.}},
+            {"prompt": "Calculate the square root of 144", "fn_args": {"a": 144.}},
+        ]
+    },
+    fn_substitute_string_with_regex: {
+        "visibility": "public",
+        "tests": [
+            {
+                "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+                "fn_args": {
+                    "source_string": "Hello 34 I'm 233 years old",
+                    "regex": "\\d+",
+                    "replacement": "NUMBERS",
+                },
+            },
+            {
+                "prompt": "Replace all vowels in 'Programming is fun' with asterisks",
+                "fn_args": {
+                    "source_string": "Programming is fun",
+                    "regex": "[aeiouAEIOU]",
+                    "replacement": "*",
+                },
+            },
+            {
+                "prompt": "Substitute the word 'cat' with 'dog' in 'The cat sat on the mat with another cat'",
+                "fn_args": {
+                    "source_string": "The cat sat on the mat with another cat",
+                    "regex": "\\bcat\\b",
+                    "replacement": "dog",
+                },
+            },
+        ]
+    },
+    # --- PRIVATE FUNCTIONS (11 tests) ---
+    fn_multiply_numbers: {
+        "visibility": "private",
+        "tests": [
+            {"prompt": "What is the product of 3 and 5?", "fn_args": {"a": 3., "b": 5.}},
+            {"prompt": "What is the product of 12 and 4?", "fn_args": {"a": 12., "b": 4.}},
+        ]
+    },
+    fn_is_even: {
+        "visibility": "private",
+        "tests": [
+            {"prompt": "Is 4 an even number?", "fn_args": {"n": 4}},
+            {"prompt": "Is 7 an even number?", "fn_args": {"n": 7}},
+        ]
+    },
+    fn_calculate_compound_interest: {
+        "visibility": "private",
+        "tests": [
+            {
+                "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years",
+                "fn_args": {"principal": 1234567.89, "rate": 0.0375, "years": 23}
+            },
+        ]
+    },
+    fn_execute_sql_query: {
+        "visibility": "private",
+        "tests": [
+            {
+                "prompt": "Execute SQL query 'SELECT * FROM users' on the production database",
+                "fn_args": {
+                    "query": "SELECT * FROM users",
+                    "database": "production"
+                }
+            },
+            {
+                "prompt": "Run the query 'INSERT INTO logs VALUES (1, 2, 3)' on the system database",
+                "fn_args": {
+                    "query": "INSERT INTO logs VALUES (1, 2, 3)",
+                    "database": "system"
+                }
+            }
+        ]
+    },
+    fn_read_file: {
+        "visibility": "private",
+        "tests": [
+            {
+                "prompt": "Read the file at /home/user/data.json with utf-8 encoding",
+                "fn_args": {"path": "/home/user/data.json", "encoding": "utf-8"}
+            },
+            {
+                "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding",
+                "fn_args": {"path": "C:\\Users\\john\\config.ini", "encoding": "latin-1"}
+            },
+        ]
+    },
+    fn_format_template: {
+        "visibility": "private",
+        "tests": [
+            {
+                "prompt": "Format template: Hello {user}'s profile!",
+                "fn_args": {"template": "Hello {user}'s profile!"}
+            },
+            {
+                "prompt": 'Format template: Say "hello" to {name}',
+                "fn_args": {"template": 'Say "hello" to {name}'}
+            },
+        ]
+    }
+}
+
+
+def get_exercises_by_visibility(visibility: str) -> dict[Callable, dict[str, Any]]:
+    """Filter exercises by visibility (public or private)."""
+    if visibility not in ("public", "private"):
+        raise ValueError(f"visibility must be 'public' or 'private', got '{visibility}'")
+
+    return {
+        fn: data for fn, data in exercises.items()
+        if data["visibility"] == visibility
+    }
+
+
+def get_functions_by_visibility(visibility: str) -> list[Callable]:
+    """Get list of function objects by visibility."""
+    filtered_exercises = get_exercises_by_visibility(visibility)
+    return list(filtered_exercises.keys())
+# ABOUTME: Generates test prompts and correction files for grading.
+# ABOUTME: Creates JSON files that students use as input and moulinette uses for validation.
+
+import json
+from typing import Any, List, Callable
+
+from pydantic import BaseModel
+
+from moulinette.functions_definition import exercises, get_exercises_by_visibility
+
+
+class Correction(BaseModel):
+    prompt: str
+    name: str
+    parameters: dict
+    expected_output: Any
+
+
+def generate_function_calling_corrections(
+    exercises_dict: dict[Callable, dict[str, Any]],
+) -> List[Correction]:
+    """Generate correction objects from exercises dictionary.
+
+    Args:
+        exercises_dict: Dictionary of functions to their exercise metadata
+
+    Returns:
+        List of Correction objects with expected outputs computed
+    """
+    corrections = []
+    for fn_to_call, data in exercises_dict.items():
+        for test in data["tests"]:
+            correction = Correction(
+                prompt=test["prompt"],
+                name=fn_to_call.__name__,
+                parameters=test["fn_args"],
+                expected_output=fn_to_call(**test["fn_args"])
+            )
+            corrections.append(correction)
+    return corrections
+
+
+def save_function_calling_corrections(
+    output_json_path: str,
+    visibility: str = "public",
+) -> None:
+    """Save corrections JSON file for a given visibility set.
+
+    Args:
+        output_json_path: Path where the corrections JSON will be written
+        visibility: Either "public" or "private" to filter exercises
+    """
+    filtered_exercises = get_exercises_by_visibility(visibility)
+    corrections = generate_function_calling_corrections(filtered_exercises)
+    corrections_list = [correction.model_dump() for correction in corrections]
+
+    with open(output_json_path, "w") as f:
+        json.dump(corrections_list, f, indent=2)
+
+
+def save_function_calling_tests(
+    output_json_path: str,
+    visibility: str = "public",
+) -> None:
+    """Save test prompts JSON file for a given visibility set.
+
+    This file contains only prompts (no answers) for students to solve.
+
+    Args:
+        output_json_path: Path where the tests JSON will be written
+        visibility: Either "public" or "private" to filter exercises
+    """
+    filtered_exercises = get_exercises_by_visibility(visibility)
+    corrections = generate_function_calling_corrections(filtered_exercises)
+    # Only include prompts, exclude answers
+    corrections_list = [
+        correction.model_dump(exclude={"expected_output", "parameters", "name"})
+        for correction in corrections
+    ]
+
+    with open(output_json_path, "w") as f:
+        json.dump(corrections_list, f, indent=2)
+# ABOUTME: Moulinette package for function calling exercise grading.
+# ABOUTME: Provides tools to generate exercises and grade student submissions.
+# ABOUTME: CLI entrypoint for moulinette - generates exercises and grades submissions.
+# ABOUTME: Usage: uv run python -m moulinette prepare_exercises|grade_student_answers
+
+import json
+import shutil
+from pathlib import Path
+
+import fire
+
+from moulinette.extract_functions_infos import generate_function_calling_definition
+from moulinette.generate_tests_and_corrections import (
+    save_function_calling_corrections,
+    save_function_calling_tests,
+)
+from moulinette.functions_definition import get_exercises_by_visibility
+from moulinette.output_formatter import ColoredOutput
+
+
+class Moulinette:
+    """CLI for generating function calling exercises and grading student submissions."""
+
+    def __init__(self):
+        self.output = ColoredOutput()
+
+    def prepare_exercises(
+        self,
+        output: str = "data",
+        set: str = "public",
+    ) -> None:
+        """Generate exercise files for students.
+
+        Args:
+            output: Output directory path (default: "data")
+            set: Exercise set to generate - "public" or "private" (default: "public")
+        """
+        if set not in ("public", "private"):
+            self.output.error(f"Invalid set '{set}'. Must be 'public' or 'private'.")
+            return
+
+        output_path = Path(output)
+        input_dir = output_path / "input"
+        correction_dir = output_path / "correction"
+
+        # Clean and recreate directories
+        shutil.rmtree(input_dir, ignore_errors=True)
+        shutil.rmtree(correction_dir, ignore_errors=True)
+        input_dir.mkdir(parents=True, exist_ok=True)
+        correction_dir.mkdir(parents=True, exist_ok=True)
+
+        functions_definition_path = input_dir / "functions_definition.json"
+        function_calling_tests_path = input_dir / "function_calling_tests.json"
+        function_calling_corrections_path = correction_dir / "function_calling_corrections.json"
+
+        self.output.info(f"Generating {set} exercise set...")
+        self.output.separator()
+
+        # Generate function definitions
+        generate_function_calling_definition(
+            output_json_path=str(functions_definition_path),
+            visibility=set,
+        )
+        self.output.success(f"Created: {functions_definition_path}")
+
+        # Generate test prompts (for students)
+        save_function_calling_tests(
+            output_json_path=str(function_calling_tests_path),
+            visibility=set,
+        )
+        self.output.success(f"Created: {function_calling_tests_path}")
+
+        # Generate corrections (for grading)
+        save_function_calling_corrections(
+            output_json_path=str(function_calling_corrections_path),
+            visibility=set,
+        )
+        self.output.success(f"Created: {function_calling_corrections_path}")
+
+        self.output.separator()
+        self.output.info(f"Exercise files generated in: {output_path}")
+
+    def grade_student_answers(
+        self,
+        student_answer_path: str,
+        set: str = "public",
+    ) -> None:
+        """Grade student submission against corrections.
+
+        Args:
+            student_answer_path: Path to the student's function_calls.json file
+            set: Exercise set to grade against - "public" or "private" (default: "public")
+        """
+        if set not in ("public", "private"):
+            self.output.error(f"Invalid set '{set}'. Must be 'public' or 'private'.")
+            return
+
+        student_path = Path(student_answer_path)
+        if not student_path.exists():
+            self.output.error(f"Student answer file not found: {student_path}")
+            return
+
+        # Load student answers
+        with open(student_path) as f:
+            student_answers = json.load(f)
+
+        # Get exercises and build function lookup
+        filtered_exercises = get_exercises_by_visibility(set)
+        fn_name_to_function = {
+            fn.__name__: fn for fn in filtered_exercises.keys()
+        }
+
+        # Build corrections from exercises
+        corrections = []
+        for fn, data in filtered_exercises.items():
+            for test in data["tests"]:
+                corrections.append({
+                    "prompt": test["prompt"],
+                    "name": fn.__name__,
+                    "parameters": test["fn_args"],
+                    "expected_output": fn(**test["fn_args"]),
+                })
+
+        total_score = 0
+        total_tests = len(corrections)
+
+        self.output.info(f"Grading against {set} set ({total_tests} tests)")
+        self.output.separator()
+
+        for i, (student_answer, correction) in enumerate(zip(student_answers, corrections), 1):
+            self.output.test_header(i, total_tests)
+            self.output.prompt(correction["prompt"])
+
+            # Check prompt match
+            if student_answer.get("prompt") != correction["prompt"]:
+                self.output.expected("Expected prompt", correction["prompt"])
+                self.output.actual("Student prompt", student_answer.get("prompt", "<missing>"))
+                self.output.test_result(False, "prompt mismatch")
+                continue
+
+            fn_name = student_answer.get("name")
+            fn_params = student_answer.get("parameters", {})
+
+            # Check function name
+            if fn_name not in fn_name_to_function:
+                self.output.expected("Expected function", correction["name"])
+                self.output.actual("Student called", fn_name)
+                self.output.test_result(False, "unknown function")
+                continue
+
+            # Try to call the function
+            fn = fn_name_to_function[fn_name]
+            try:
+                student_output = fn(**fn_params)
+            except Exception as e:
+                self.output.expected("Expected parameters", correction["parameters"])
+                self.output.actual("Student parameters", fn_params)
+                self.output.error(f"  Error: {e}")
+                self.output.test_result(False, "invalid parameters")
+                continue
+
+            # Check output
+            if student_output != correction["expected_output"]:
+                # Show what the student did
+                self.output.actual("Student called", f"{fn_name}({fn_params})")
+                self.output.actual("Student result", student_output)
+                # Show what was expected
+                self.output.expected("Expected call", f"{correction['name']}({correction['parameters']})")
+                self.output.expected("Expected result", correction["expected_output"])
+                self.output.test_result(False, "wrong output")
+                continue
+
+            total_score += 1
+            self.output.test_result(True)
+
+        self.output.summary(total_score, total_tests)
+
+
+if __name__ == "__main__":
+    fire.Fire(Moulinette)
+# ABOUTME: Provides formatted terminal output for grading results.
+# ABOUTME: Uses ASCII art and optional colors for clear visual separation.
+
+import os
+import sys
+
+# Try to use colorama if available, otherwise fall back to no colors
+try:
+    from colorama import init, Fore, Style
+    init(autoreset=True)
+    COLORS_AVAILABLE = True
+except ImportError:
+    COLORS_AVAILABLE = False
+
+# Check if we're in a terminal that supports colors
+def _supports_color() -> bool:
+    if not COLORS_AVAILABLE:
+        return False
+    if os.environ.get("NO_COLOR"):
+        return False
+    if not hasattr(sys.stdout, "isatty"):
+        return False
+    return sys.stdout.isatty()
+
+
+class ColoredOutput:
+    """Utility class for consistent formatted terminal output during grading."""
+
+    def __init__(self):
+        self.use_color = _supports_color()
+
+    def _color(self, text: str, fore: str = "", style: str = "") -> str:
+        """Apply color if available, otherwise return plain text."""
+        if not self.use_color:
+            return text
+        return f"{fore}{style}{text}{Style.RESET_ALL if COLORS_AVAILABLE else ''}"
+
+    def separator(self) -> None:
+        """Print a separator line."""
+        line = "-" * 80
+        if self.use_color:
+            print(Fore.CYAN + line)
+        else:
+            print(line)
+
+    def success(self, msg: str) -> None:
+        """Print a success message."""
+        if self.use_color:
+            print(f"{Fore.GREEN}{Style.BRIGHT}{msg}")
+        else:
+            print(f"[OK] {msg}")
+
+    def error(self, msg: str) -> None:
+        """Print an error message."""
+        if self.use_color:
+            print(f"{Fore.RED}{Style.BRIGHT}{msg}")
+        else:
+            print(f"[ERROR] {msg}")
+
+    def warning(self, msg: str) -> None:
+        """Print a warning message."""
+        if self.use_color:
+            print(f"{Fore.YELLOW}{msg}")
+        else:
+            print(f"[WARN] {msg}")
+
+    def info(self, msg: str) -> None:
+        """Print an info message."""
+        if self.use_color:
+            print(f"{Fore.WHITE}{msg}")
+        else:
+            print(msg)
+
+    def expected(self, label: str, value: object) -> None:
+        """Print an expected value."""
+        if self.use_color:
+            print(f"{Fore.CYAN}  {label}: {Fore.WHITE}{value}")
+        else:
+            print(f"  [EXPECTED] {label}: {value}")
+
+    def actual(self, label: str, value: object) -> None:
+        """Print an actual value."""
+        if self.use_color:
+            print(f"{Fore.MAGENTA}  {label}: {Fore.WHITE}{value}")
+        else:
+            print(f"  [GOT]      {label}: {value}")
+
+    def prompt(self, prompt_text: str) -> None:
+        """Print the prompt being tested."""
+        if self.use_color:
+            print(f"{Fore.BLUE}Prompt: {Fore.WHITE}{prompt_text}")
+        else:
+            print(f"Prompt: {prompt_text}")
+
+    def test_header(self, test_num: int, total: int) -> None:
+        """Print a test case header with ASCII box."""
+        header = f" Test {test_num}/{total} "
+        width = 60
+        padding = (width - len(header)) // 2
+
+        if self.use_color:
+            print(f"\n{Fore.CYAN}+{'-' * width}+")
+            print(f"|{' ' * padding}{header}{' ' * (width - padding - len(header))}|")
+            print(f"+{'-' * width}+{Style.RESET_ALL}")
+        else:
+            print(f"\n+{'-' * width}+")
+            print(f"|{' ' * padding}{header}{' ' * (width - padding - len(header))}|")
+            print(f"+{'-' * width}+")
+
+    def test_result(self, passed: bool, reason: str = "") -> None:
+        """Print a test result indicator."""
+        if passed:
+            if self.use_color:
+                print(f"{Fore.GREEN}{Style.BRIGHT}>>> VALID <<<{Style.RESET_ALL}")
+            else:
+                print(">>> VALID <<<")
+        else:
+            if self.use_color:
+                print(f"{Fore.RED}{Style.BRIGHT}>>> INVALID: {reason} <<<{Style.RESET_ALL}")
+            else:
+                print(f">>> INVALID: {reason} <<<")
+
+    def summary(self, score: int, total: int) -> None:
+        """Print final score summary with ASCII box."""
+        pct = (score / total) * 100 if total else 0
+
+        # Determine status
+        if pct == 100:
+            status = "PERFECT"
+            color = Fore.GREEN if self.use_color else ""
+        elif pct >= 70:
+            status = "PASSED"
+            color = Fore.YELLOW if self.use_color else ""
+        else:
+            status = "FAILED"
+            color = Fore.RED if self.use_color else ""
+
+        score_text = f"SCORE: {score}/{total} ({pct:.1f}%)"
+
+        width = 44
+
+        print()
+        if self.use_color:
+            print(f"{color}{Style.BRIGHT}+{'=' * width}+")
+            print(f"|{' ' * width}|")
+            print(f"|{status:^{width}}|")
+            print(f"|{score_text:^{width}}|")
+            print(f"|{' ' * width}|")
+            print(f"+{'=' * width}+{Style.RESET_ALL}")
+        else:
+            print(f"+{'=' * width}+")
+            print(f"|{' ' * width}|")
+            print(f"|{status:^{width}}|")
+            print(f"|{score_text:^{width}}|")
+            print(f"|{' ' * width}|")
+            print(f"+{'=' * width}+")
+        print()

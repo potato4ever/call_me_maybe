@@ -1,4 +1,8 @@
 from llm_sdk.llm_sdk import Small_LLM_Model
+import json
+with open("tmp.json", mode="r+") as file:
+    json.dump('{"name": .}', file, indent=2)
+exit()
 s = Small_LLM_Model()
 tests = [
     "235",

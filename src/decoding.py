@@ -1,12 +1,11 @@
-# ABOUTME: Constrained decoding engine.
-# ABOUTME: At every generation step, evaluate the vocabulary tokens against
-# ABOUTME: the active grammar and greedily select the highest-logit valid token.
-
-from typing import Any, Dict, List, Protocol
+from typing import Any, Dict, List, Protocol, Tuple
 
 import numpy as np
 
 from .grammar import Grammar, TrieGrammar
+
+from pathlib import Path
+import json
 
 
 class DecodingError(Exception):
@@ -19,15 +18,32 @@ class LLMModel(Protocol):
     def encode(self, text: str) -> Any:
         ...
 
-    def decode_token(self, token_id: int) -> str:
+    def get_path_to_vocab_file(self) -> str:
         ...
 
-    def get_vocab(self) -> Dict[str, int]:
+    def decode(self, token_id: int) -> str:
         ...
 
     def get_logits_from_input_ids(self, input_ids: List[int]) -> List[float]:
         ...
 
+def get_vocab(model: LLMModel) -> Dict[str, int]: 
+    path = Path(model.get_path_to_vocab_file())
+    if not path.is_file():
+        raise DecodingError("no vocab file founded")
+    try:
+        vocab = path.read_text()
+    except OSError as exc:
+        raise DecodingError(f"could not read {path}: {exc}")
+    try:
+        v = json.loads(vocab)
+    except json.JSONDecodeError as exc:
+        raise DecodingError(
+            f"invalid JSON in vocab file {path}: {exc}"
+        )
+    if not isinstance(v, dict):
+        raise DecodingError(f"the vocab content should be dictionary")
+    return v
 
 def _encode_to_ids(model: LLMModel, text: str) -> List[int]:
     """Encode text and normalize the result to a plain list of token IDs."""
@@ -55,8 +71,6 @@ def _encode_to_ids(model: LLMModel, text: str) -> List[int]:
 class TokenTrieNode:
     """A node in a token-ID trie."""
 
-    __slots__ = ("children", "complete")
-
     def __init__(self) -> None:
         self.children: Dict[int, "TokenTrieNode"] = {}
         self.complete = False
@@ -78,6 +92,7 @@ class TokenTrie:
 
         for value in values:
             ids = _encode_to_ids(model, value)
+            ids.extend(_encode_to_ids(model, "\""))
 
             node = self.root
 
@@ -86,13 +101,13 @@ class TokenTrie:
                     token_id,
                     TokenTrieNode(),
                 )
-
             node.complete = True
+            node = self.root
 
     def allowed(
         self,
         generated_ids: List[int],
-    ) -> tuple[np.ndarray, bool]:
+    ) -> Tuple[np.ndarray, bool]:
         """Return valid next token IDs and whether the current value is complete."""
         node = self.root
 
@@ -100,14 +115,14 @@ class TokenTrie:
             node = node.children.get(token_id)
 
             if node is None:
-                return np.empty(0, dtype=np.int64), False
+                return np.empty(0, dtype=np.int64)
 
-        allowed_ids = np.fromiter(
-            node.children.keys(),
+        allowed_ids = np.array(
+            list(node.children.keys()),
             dtype=np.int64,
         )
 
-        return allowed_ids, node.complete
+        return allowed_ids
 
 
 class ConstraintCache:
@@ -115,9 +130,9 @@ class ConstraintCache:
 
     def __init__(self, model: LLMModel) -> None:
         self._model = model
-        self._tries: Dict[tuple[str, ...], TokenTrie] = {}
+        self._tries: Dict[Tuple[str, ...], TokenTrie] = {}
 
-    def trie(self, options: List[str]) -> TokenTrie:
+    def trie(self, options: Tuple[str]) -> TokenTrie:
         key = tuple(options)
 
         cached = self._tries.get(key)
@@ -156,23 +171,11 @@ def _best_allowed_token(
 
     return int(valid_ids[best_index])
 
-def _print_dynamic_candidates(
-    candidates: List[tuple[float, int, str, str]],
-    limit: int = 10,
-) -> None:
-    """Print only the highest-logit valid candidates."""
-
-    for logit, token_id, token_text, status in candidates[:limit]:
-        print(
-            f"    {logit:7.2f}  "
-            f"{token_text!s:12} -> {status}"
-        )
 
 def constrained_generate(
     model: LLMModel,
     context_text: str,
     grammar: Grammar,
-    *,
     constraint_cache: ConstraintCache,
     max_tokens: int = 60,
 ) -> str:
@@ -192,12 +195,10 @@ def constrained_generate(
     trie = None
 
     if _is_closed_grammar(grammar):
-        assert isinstance(grammar, TrieGrammar)
-
         trie = constraint_cache.trie(grammar._options)
 
     # Get the vocabulary once.
-    vocab = model.get_vocab()
+    vocab = get_vocab(model)
 
     vocabulary_ids = np.asarray(
         list(vocab.values()),
@@ -205,11 +206,6 @@ def constrained_generate(
     )
 
     for step in range(max_tokens):
-        print("\n" + "=" * 80)
-        print("ACTUAL MODEL INPUT")
-        print("=" * 80)
-        print(context_text + generated)
-        print("=" * 80)
         input_ids = _encode_to_ids(
             model,
             context_text + generated,
@@ -228,29 +224,16 @@ def constrained_generate(
             raw_logits,
             dtype=np.float32,
         )
-        print(f"\nSTEP {step} | {type(grammar).__name__}")
-        print(f"generated: {generated!r}")
 
         # ---------------------------------------------------------------
         # Closed grammar
         # ---------------------------------------------------------------
         if trie is not None:
-            allowed_ids, trie_complete = trie.allowed(
+            allowed_ids = trie.allowed(
                 generated_ids
             )
 
-            print("\n" + "-" * 80)
-            print("CLOSED GRAMMAR STATE")
-            print("-" * 80)
-            print("Grammar:", type(grammar).__name__)
-            print("Generated IDs:", generated_ids)
-            print("Allowed IDs:", allowed_ids.tolist())
-            print("Trie complete:", trie_complete)
-            print("-" * 80)
 
-            if trie_complete:
-                print("TRIE SAYS VALUE IS COMPLETE")
-                break
 
 
             best_id = _best_allowed_token(
@@ -259,37 +242,16 @@ def constrained_generate(
             )
 
             if best_id is None:
-                print("NO VALID TOKEN SELECTED")
-
                 if grammar.is_complete(generated):
-                    print("Grammar itself considers the value complete.")
                     break
+                raise DecodingError("no valid token for generated")
 
-                suffix = grammar.force_close(generated)
-
-                print(
-                    "Grammar force_close returned:",
-                    repr(suffix),
-                )
-
-                if not suffix:
-                    raise DecodingError(
-                        "grammar stalled before completing value: "
-                        f"{generated!r}"
-                    )
-
-                generated += suffix
-                break
-
-            best_text = model.decode_token(best_id)
+            best_text = model.decode(best_id)
             best_logit = float(logits[best_id])
 
             if not best_text:
-                print(
-                    "CHOSEN TOKEN HAS EMPTY TEXT:",
-                    f"id={best_id}",
-                    f"logit={best_logit:.4f}",
-                )
+                raise DecodingError(f"chosen token {best_id} is empty text")
+
 
                 # A token with no decoded text cannot help us generate a value.
                 generated_ids.append(best_id)
@@ -300,91 +262,13 @@ def constrained_generate(
                 best_text,
             )
 
-            print("\n" + "-" * 80)
-            print("CHOSEN TOKEN")
-            print("-" * 80)
-            print(f"id:       {best_id}")
-            print(f"text:     {best_text!r}")
-            print(f"logit:    {best_logit:.4f}")
-            print(f"status:   {status}")
-            print(f"previous: {generated!r}")
-            print(f"new:      {(generated + best_text)!r}")
-            print("-" * 80)
-
             if status == "invalid":
-                print(
-                    "WARNING: trie-selected token was rejected by grammar."
-                )
-
-                valid_ids = [
-                    token_id
-                    for token_id in allowed_ids.tolist()
-                    if 0 <= int(token_id) < logits.size
-                    and grammar.check(
-                        generated,
-                        model.decode_token(int(token_id)),
-                    ) != "invalid"
-                ]
-
-                print(
-                    "Grammar-valid subset of trie candidates:",
-                    valid_ids,
-                )
-
-                best_id = _best_allowed_token(
-                    logits,
-                    np.asarray(
-                        valid_ids,
-                        dtype=np.int64,
-                    ),
-                )
-
-                if best_id is None:
-                    if grammar.is_complete(generated):
-                        break
-
-                    suffix = grammar.force_close(generated)
-
-                    print(
-                        "Grammar force_close returned:",
-                        repr(suffix),
-                    )
-
-                    if not suffix:
-                        raise DecodingError(
-                            "grammar stalled before completing value: "
-                            f"{generated!r}"
-                        )
-
-                    generated += suffix
-                    break
-
-                best_text = model.decode_token(best_id)
-                best_logit = float(logits[best_id])
-
-                status = grammar.check(
-                    generated,
-                    best_text,
-                )
-
-                print(
-                    "FALLBACK CHOSEN TOKEN:",
-                    f"id={best_id}",
-                    f"text={best_text!r}",
-                    f"logit={best_logit:.4f}",
-                    f"status={status}",
-                )
-
-            generated += best_text
-            generated_ids.append(best_id)
-
-            print(
-                "GENERATED NOW:",
-                repr(generated),
-            )
+                raise DecodingError(f"unknow function {best_text}")
+            if best_text != "\"":
+                generated += best_text
+                generated_ids.append(best_id)
 
             if status == "complete":
-                print("GRAMMAR COMPLETE")
                 break
 
             continue
@@ -402,23 +286,11 @@ def constrained_generate(
         best_status = "invalid"
         best_logit = float("-inf")
 
-        debug_candidates: List[
-            tuple[float, int, str, str]
-        ] = []
-
-        invalid_count = 0
-        empty_count = 0
 
         for token_id in vocabulary_ids.tolist():
-            token_id = int(token_id)
-
-            if token_id < 0 or token_id >= logits.size:
-                continue
-
-            token_text = model.decode_token(token_id)
+            token_text = model.decode(token_id)
 
             if not token_text:
-                empty_count += 1
                 continue
 
             status = grammar.check(
@@ -429,17 +301,8 @@ def constrained_generate(
             logit = float(logits[token_id])
 
             if status == "invalid":
-                invalid_count += 1
                 continue
 
-            debug_candidates.append(
-                (
-                    logit,
-                    token_id,
-                    repr(token_text),
-                    status,
-                )
-            )
 
             if best_id is None or logit > best_logit:
                 best_id = token_id
@@ -447,41 +310,12 @@ def constrained_generate(
                 best_status = status
                 best_logit = logit
 
-        debug_candidates.sort(
-            key=lambda item: item[0],
-            reverse=True,
-        )
-
-        _print_dynamic_candidates(
-            debug_candidates,
-        )
-
         # No valid token was found.
         if best_id is None:
-            print("NO VALID TOKEN FOUND")
-
-            if grammar.is_complete(generated):
-                print("Grammar itself considers the value complete.")
-                break
-
-            suffix = grammar.force_close(generated)
-
-            print(
-                "Grammar force_close returned:",
-                repr(suffix),
+            raise DecodingError(
+                "no valid token available to continue generation: "
+                f"{generated!r}"
             )
-
-            if not suffix:
-                raise DecodingError(
-                    "grammar stalled before completing value: "
-                    f"{generated!r}"
-                )
-
-            generated += suffix
-            break
-        print(
-            f"selected: {best_text!r} -> {best_status}"
-        )
 
         if best_status == "complete":
             completion_text = grammar.consume_completion(
@@ -492,48 +326,16 @@ def constrained_generate(
             generated += completion_text
             generated_ids.append(best_id)
 
-            print(
-                "COMPLETION TOKEN:",
-                repr(best_text),
-            )
-            print(
-                "SEMANTIC TEXT:",
-                repr(completion_text),
-            )
-            print("GRAMMAR COMPLETE")
-
             break
 
         generated += best_text
         generated_ids.append(best_id)
-
-    else:
-        print("\n" + "=" * 80)
-        print("MAXIMUM GENERATION LENGTH REACHED")
-        print("=" * 80)
-        print("Generated:", repr(generated))
-
-        if not grammar.is_complete(generated):
-            suffix = grammar.force_close(generated)
-
-            print(
-                "Grammar force_close returned:",
-                repr(suffix),
-            )
-
-            if not suffix:
-                raise DecodingError(
-                    "generation limit reached before completion: "
-                    f"{generated!r}"
-                )
-
-            generated += suffix
-
-    print("\n" + "=" * 80)
-    print("FINAL CONSTRAINED GENERATION")
-    print("=" * 80)
-    print(repr(generated))
-    print("Token IDs:", generated_ids)
-    print("=" * 80)
-
     return generated
+if __name__ == "__main__":
+    from llm_sdk.llm_sdk import Small_LLM_Model
+    model = Small_LLM_Model()
+    t = tuple(["potato", "tomtato", "1234"])
+    print(t)
+    TokenTrie(t, model)
+
+

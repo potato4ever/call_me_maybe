@@ -1,26 +1,30 @@
 # ABOUTME: Command-line entry point for call_me_maybe.
 # ABOUTME: Loads configuration and model, prepares token constraints once,
 # ABOUTME: processes prompts, and writes validated results.
+try:
+    import argparse
+    import json
+    import sys
+    from pathlib import Path
+    from typing import List, Sequence
 
-import argparse
-import json
-import sys
-from pathlib import Path
-from typing import List, Sequence
-
-from .decoding import ConstraintCache
-from .pipeline import PipelineError, process_prompt
-from .schema_loader import (
-    ConfigError,
-    load_functions_definition,
-    load_prompts,
-)
+    from .decoding import ConstraintCache
+    from .pipeline import PipelineError, process_prompt
+    from .schema_loader import (
+        ConfigError,
+        load_functions_definition,
+        load_prompts,
+    )
+except Exception as exc:
+    print(
+        f"Error: could not import required module: {exc}",
+        file=sys.stderr,
+    )
 
 
 DEFAULT_FUNCTIONS_PATH = "data/input/functions_definition.json"
 DEFAULT_INPUT_PATH = "data/input/function_calling_tests.json"
 DEFAULT_OUTPUT_PATH = "data/output/function_calling_results.json"
-DEFAULT_MODEL = "Qwen/Qwen3-0.6B"
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -46,12 +50,6 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--output",
         default=DEFAULT_OUTPUT_PATH,
     )
-
-    parser.add_argument(
-        "--model",
-        default=DEFAULT_MODEL,
-    )
-
     return parser.parse_args(argv)
 
 
@@ -76,9 +74,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         from llm_sdk.llm_sdk import Small_LLM_Model
 
-        model = Small_LLM_Model(
-            model_name=args.model
-        )
+        model = Small_LLM_Model()
 
     except Exception as exc:
         print(
@@ -89,15 +85,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     print("Preparing token constraints...")
 
-    try:
-        constraint_cache = ConstraintCache(model)
-
-    except Exception as exc:
-        print(
-            f"Error: could not prepare token constraints: {exc}",
-            file=sys.stderr,
-        )
-        return 1
+    constraint_cache = ConstraintCache(model)
 
     results: List[dict] = []
 
@@ -165,4 +153,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("exit")
+    except Exception as e:
+        print(f"Error: {e}")

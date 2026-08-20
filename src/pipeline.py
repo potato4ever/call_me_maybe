@@ -35,15 +35,11 @@ def _select_function(
         prompt,
     )
 
-    print("\n" + "=" * 80)
-    print("SELECTION CONTEXT")
-    print("=" * 80)
-    print(selection_prompt)
-    print("=" * 80)
 
     grammar = TrieGrammar(
         [fn.name for fn in functions]
     )
+    max_name_len = max(len(fn.name) for fn in functions)
 
     try:
         generated = constrained_generate(
@@ -70,12 +66,6 @@ def _select_function(
         + '", '
     )
 
-    print("\n" + "=" * 80)
-    print("CONTEXT AFTER FUNCTION SELECTION")
-    print("=" * 80)
-    print(context)
-    print("=" * 80)
-
     return functions_by_name[generated], context
 
 
@@ -90,20 +80,9 @@ def _generate_parameter_value(
     parameters: Dict[str, ParamValue],
 ) -> ParamValue:
 
-    context = (
-        "You are generating a parameter value for a function call.\n\n"
-        f"Parameter name: {param_name}\n"
-        f"Parameter type: {param_type}\n\n"
-        "Determine the correct value for the current parameter using "
-        "the user's request, the selected function, its description, "
-        "the parameter name and type, and if asked put the appropriate "
-        "regular expression and any parameters already generated.\n"
-        "Output only the parameter value.\n\n"
-        f'User request: "{prompt}"\n\n'
-        f"Function description: {function_description}\n\n"
-        f'Function call: {{"name": "{function_name}", "parameters": {{'
-    )
-
+    context = ( f'Request: "{prompt}"\n' 
+               f"Function: {function_name} — {function_description}\n"
+               f"Parameters so far: {parameters!r}\n")
     for name, value in parameters.items():
         context += f'"{name}": {value!r}, '
 
@@ -113,11 +92,6 @@ def _generate_parameter_value(
     if param_type == "string":
         context += f'"{param_name}": "'
 
-        print("\n" + "=" * 80)
-        print("PARAMETER CONTEXT")
-        print("=" * 80)
-        print(context)
-        print("=" * 80)
 
         generated = constrained_generate(
             model,
@@ -141,11 +115,6 @@ def _generate_parameter_value(
     if param_type in ("number", "integer"):
         context += f'"{param_name}": '
 
-        print("\n" + "=" * 80)
-        print("PARAMETER CONTEXT")
-        print("=" * 80)
-        print(context)
-        print("=" * 80)
 
         generated = constrained_generate(
             model,
@@ -180,11 +149,6 @@ def _generate_parameter_value(
     if param_type in ("boolean", "bool"):
         context += f'"{param_name}": '
 
-        print("\n" + "=" * 80)
-        print("PARAMETER CONTEXT")
-        print("=" * 80)
-        print(context)
-        print("=" * 80)
 
         generated = constrained_generate(
             model,
