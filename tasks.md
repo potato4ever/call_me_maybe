@@ -1,5 +1,4 @@
 handle:
-    what happens when the model return emptyx[x] (it stop the generation)
     if packages didn't exist
     if there no function name it's not count as a function
     if there is multiple keys or duplicates
@@ -38,3 +37,5 @@ check:
   # Completed:
     the trie doesn't work correctly it stops if you found "cat" and 
       don't care about "catfish" \[x]
+    what happens when the model return empty \[x] (it stop the generation)
+
