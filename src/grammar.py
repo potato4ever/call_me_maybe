@@ -1,10 +1,14 @@
 # ABOUTME: Small grammar/state-machine objects used by constrained decoding.
 # ABOUTME: They validate generated text and report whether a candidate continues
 # ABOUTME: or completes the current semantic value.
-
-import re
-from typing import List, Protocol
-
+try:
+    import re
+    from typing import List, Protocol
+except Exception as exc:
+    print(
+        f"Error: could not import required module: {exc}",
+        file=sys.stderr,
+    )
 
 GrammarStatus = str
 

@@ -1,11 +1,17 @@
-from typing import Any, Dict, List, Protocol, Tuple
+try:
+    from typing import Any, Dict, List, Protocol, Tuple
 
-import numpy as np
+    import numpy as np
 
-from .grammar import Grammar, TrieGrammar
+    from .grammar import Grammar, TrieGrammar
 
-from pathlib import Path
-import json
+    from pathlib import Path
+    import json
+except Exception as exc:
+    print(
+        f"Error: could not import required module: {exc}",
+        file=sys.stderr,
+    )
 
 
 class DecodingError(Exception):

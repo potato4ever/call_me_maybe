@@ -1,9 +1,15 @@
 # ABOUTME: Pydantic data models used across the project (schema + I/O validation).
 # ABOUTME: These models give us free validation and clear error messages on malformed input.
+try:
+    from typing import Dict, Union
+    import keyword
+    from pydantic import BaseModel, ConfigDict, field_validator
+except Exception as exc:
+    print(
+        f"Error: could not import required module: {exc}",
+        file=sys.stderr,
+    )
 
-from typing import Dict, Union
-import keyword
-from pydantic import BaseModel, ConfigDict, field_validator
 
 #: Parameter/return types we know how to constrained-decode.
 SUPPORTED_TYPES = {"number", "integer", "string", "boolean", "bool"}

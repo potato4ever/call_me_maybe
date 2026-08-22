@@ -1,9 +1,14 @@
 # ABOUTME: Builds the natural-language context given to the model before
 # ABOUTME: constrained decoding selects the function.
+try:
+    from typing import List
 
-from typing import List
-
-from .models import FunctionDefinition
+    from .models import FunctionDefinition
+except Exception as exc:
+    print(
+        f"Error: could not import required module: {exc}",
+        file=sys.stderr,
+    )
 
 
 def _describe_function(fn: FunctionDefinition) -> str:

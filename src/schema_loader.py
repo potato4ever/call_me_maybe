@@ -1,13 +1,18 @@
 # ABOUTME: Loads and validates the two JSON input files (functions + prompts).
 # ABOUTME: Never raises raw json/pydantic exceptions; always wraps them in ConfigError.
+try:
+    import json
+    from pathlib import Path
+    from typing import Any, List
 
-import json
-from pathlib import Path
-from typing import Any, List
+    from pydantic import ValidationError
 
-from pydantic import ValidationError
-
-from .models import FunctionDefinition, PromptEntry
+    from .models import FunctionDefinition, PromptEntry
+except Exception as exc:
+    print(
+        f"Error: could not import required module: {exc}",
+        file=sys.stderr,
+    )
 
 
 class ConfigError(Exception):
