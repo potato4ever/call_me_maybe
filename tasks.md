@@ -28,6 +28,7 @@ check:
 - mypy
 - you should remove get_vocab() and decode_tokens (check if the vocab file didn't exist)
 - remove the debugging informations
+- look at _select_function if the max_name_len is right 
 # recoding
 - you should be able answer this "there is 1 blue car 3  apples green" to output this 
   ""car": \[1, "blue"], "apple": \[3, green] it's not necessary to give you function(apples is not wrong)

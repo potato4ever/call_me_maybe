@@ -1,17 +1,21 @@
+"""Constrained decoding implementation for LLM function calling.
+
+This module provides the core logic for intercepting LLM logits and
+restricting token selection based on a grammar or a trie of valid values.
+"""
+import sys
 try:
-    from typing import Any, Dict, List, Protocol, Tuple
-
+    from typing import (Any, Dict, List, Protocol, Tuple, Optional,
+                        Sequence, cast)
     import numpy as np
-
     from .grammar import Grammar, TrieGrammar
-
     from pathlib import Path
     import json
 except Exception as exc:
     print(
-        f"Error: could not import required module: {exc}",
-        file=sys.stderr,
+        f"Error: could not import required module: {exc}"
     )
+    sys.exit(1)
 
 
 class DecodingError(Exception):
@@ -19,26 +23,46 @@ class DecodingError(Exception):
 
 
 class LLMModel(Protocol):
-    """The model interface required by the constrained decoder."""
+    """The model interface required by the constrained decoder.
+
+    This protocol ensures that any model passed to the decoder has the
+    required methods for tokenization, inference, and vocabulary access.
+    """
 
     def encode(self, text: str) -> Any:
+        """Encode text into token IDs."""
         ...
 
     def get_path_to_vocab_file(self) -> str:
+        """Return the path to the vocabulary JSON file."""
         ...
 
-    def decode(self, token_id: int) -> str:
+    def decode(self, ids: Any) -> str:
+        """Decode token IDs back into text."""
         ...
 
     def get_logits_from_input_ids(self, input_ids: List[int]) -> List[float]:
+        """Get the next-token logits from the model."""
         ...
 
-def get_vocab(model: LLMModel) -> Dict[str, int]: 
+
+def get_vocab(model: LLMModel) -> Dict[str, int]:
+    """Retrieve and validate the model's vocabulary.
+
+    Args:
+        model: The LLM model instance.
+
+    Returns:
+        Dict[str, int]: The mapping of tokens to IDs.
+
+    Raises:
+        DecodingError: If the vocab file is missing, unreadable, or invalid.
+    """
     path = Path(model.get_path_to_vocab_file())
     if not path.is_file():
         raise DecodingError("no vocab file founded")
     try:
-        vocab = path.read_text()
+        vocab = path.read_text(encoding="utf-8")
     except OSError as exc:
         raise DecodingError(f"could not read {path}: {exc}")
     try:
@@ -48,11 +72,23 @@ def get_vocab(model: LLMModel) -> Dict[str, int]:
             f"invalid JSON in vocab file {path}: {exc}"
         )
     if not isinstance(v, dict):
-        raise DecodingError(f"the vocab content should be dictionary")
+        raise DecodingError("the vocab content should be dictionary")
     return v
 
+
 def _encode_to_ids(model: LLMModel, text: str) -> List[int]:
-    """Encode text and normalize the result to a plain list of token IDs."""
+    """Encode text and normalize the result to a plain list of token IDs.
+
+    Args:
+        model: The LLM model instance.
+        text: The string to encode.
+
+    Returns:
+        List[int]: A flat list of token IDs.
+
+    Raises:
+        DecodingError: If the model returns an empty sequence.
+    """
     encoded = model.encode(text)
 
     to_list = getattr(encoded, "tolist", None)
@@ -75,32 +111,44 @@ def _encode_to_ids(model: LLMModel, text: str) -> List[int]:
 
 
 class TokenTrieNode:
-    """A node in a token-ID trie."""
+    """A node in a token-ID trie.
+
+    Attributes:
+        children: Map of token ID to the next node.
+        complete: Boolean indicating if this node represents a valid endpoint.
+    """
 
     def __init__(self) -> None:
+        """Initialize a trie node."""
         self.children: Dict[int, "TokenTrieNode"] = {}
-        self.complete = False
+        self.complete: bool = False
 
 
 class TokenTrie:
     """Trie of complete tokenizer-produced sequences.
 
-    This is used only for closed grammars such as function names and
-    boolean values, where we already know every possible valid value.
+    Used for closed grammars (like function names or booleans) where all
+    possible valid string values are known in advance.
     """
 
     def __init__(
         self,
-        values: List[str],
+        values: Sequence[str],
         model: LLMModel,
     ) -> None:
+        """Build a token trie from a list of strings.
+
+        Args:
+            values: List of valid string options.
+            model: The LLM model used for encoding.
+        """
         self.root = TokenTrieNode()
 
         for value in values:
             ids = _encode_to_ids(model, value)
             ids.extend(_encode_to_ids(model, "\""))
 
-            node = self.root
+            node: TokenTrieNode = self.root
 
             for token_id in ids:
                 node = node.children.setdefault(
@@ -113,32 +161,48 @@ class TokenTrie:
     def allowed(
         self,
         generated_ids: List[int],
-    ) -> Tuple[np.ndarray, bool]:
-        """Return valid next token IDs and whether the current value is complete."""
-        node = self.root
+    ) -> np.ndarray:
+
+        """Return valid next token IDs based on the sequence generated so far.
+
+        Args:
+            generated_ids: Token IDs generated in the current phase.
+
+        Returns:
+            np.ndarray: An array of allowed token IDs.
+        """
+        node = self.root  # no Optional annotation needed
 
         for token_id in generated_ids:
-            node = node.children.get(token_id)
-
-            if node is None:
+            next_node = node.children.get(token_id)
+            if next_node is None:
                 return np.empty(0, dtype=np.int64)
+            node = next_node
 
-        allowed_ids = np.array(
-            list(node.children.keys()),
-            dtype=np.int64,
-        )
-
-        return allowed_ids
+        return np.array(list(node.children.keys()), dtype=np.int64)
 
 
 class ConstraintCache:
-    """Cache token tries for closed grammars."""
+    """Cache for token tries to avoid redundant re-encoding.
+
+    Attributes:
+        model: The LLM model used for encoding values.
+    """
 
     def __init__(self, model: LLMModel) -> None:
+        """Initialize the cache."""
         self._model = model
         self._tries: Dict[Tuple[str, ...], TokenTrie] = {}
 
-    def trie(self, options: Tuple[str]) -> TokenTrie:
+    def trie(self, options: Tuple[str, ...]) -> TokenTrie:
+        """Retrieve a cached trie or create a new one.
+
+        Args:
+            options: List of valid strings for the grammar.
+
+        Returns:
+            TokenTrie: The trie for the provided options.
+        """
         key = tuple(options)
 
         cached = self._tries.get(key)
@@ -153,15 +217,23 @@ class ConstraintCache:
 
 
 def _is_closed_grammar(grammar: Grammar) -> bool:
-    """Return whether the grammar represents a fixed set of values."""
+    """Check if the grammar represents a fixed set of values."""
     return isinstance(grammar, TrieGrammar)
 
 
 def _best_allowed_token(
     logits: np.ndarray,
     allowed_ids: np.ndarray,
-) -> int | None:
-    """Return the highest-logit token among the allowed token IDs."""
+) -> Optional[int]:
+    """Find the highest-logit token within the allowed set.
+
+    Args:
+        logits: Full probability distribution from the LLM.
+        allowed_ids: Subset of token IDs permitted by the grammar.
+
+    Returns:
+        Optional[int]: The best token ID, or None if no valid tokens exist.
+    """
     if allowed_ids.size == 0:
         return None
 
@@ -185,23 +257,29 @@ def constrained_generate(
     constraint_cache: ConstraintCache,
     max_tokens: int = 60,
 ) -> str:
-    """Generate a grammar-constrained continuation.
+    """Generate text while strictly enforcing grammar constraints.
 
-    For closed grammars, a token-ID trie dramatically reduces the candidate
-    set.
+    Args:
+        model: The LLM model instance.
+        context_text: The initial prompt text.
+        grammar: The grammar object defining valid transitions.
+        constraint_cache: Cache for reusable token tries.
+        max_tokens: Maximum number of tokens to generate.
 
-    For dynamic grammars such as numbers and strings, every vocabulary token
-    is checked directly against the grammar. This is intentionally simple:
-    correctness is more important than optimization at this stage.
+    Returns:
+        str: The generated, valid string.
+
+    Raises:
+        DecodingError: If no valid tokens are found or inference fails.
     """
 
     generated = ""
     generated_ids: List[int] = []
 
-    trie = None
+    trie: Optional[TokenTrie] = None
 
     if _is_closed_grammar(grammar):
-        trie = constraint_cache.trie(grammar._options)
+        trie = constraint_cache.trie(cast(TrieGrammar, grammar)._options)
 
     # Get the vocabulary once.
     vocab = get_vocab(model)
@@ -238,10 +316,6 @@ def constrained_generate(
             allowed_ids = trie.allowed(
                 generated_ids
             )
-
-
-
-
             best_id = _best_allowed_token(
                 logits,
                 allowed_ids,
@@ -257,8 +331,6 @@ def constrained_generate(
 
             if not best_text:
                 raise DecodingError(f"chosen token {best_id} is empty text")
-
-
                 # A token with no decoded text cannot help us generate a value.
                 generated_ids.append(best_id)
                 continue
@@ -291,8 +363,6 @@ def constrained_generate(
         best_text = ""
         best_status = "invalid"
         best_logit = float("-inf")
-
-
         for token_id in vocabulary_ids.tolist():
             token_text = model.decode(token_id)
 
@@ -308,8 +378,6 @@ def constrained_generate(
 
             if status == "invalid":
                 continue
-
-
             if best_id is None or logit > best_logit:
                 best_id = token_id
                 best_text = token_text
@@ -322,13 +390,11 @@ def constrained_generate(
                 "no valid token available to continue generation: "
                 f"{generated!r}"
             )
-
         if best_status == "complete":
             completion_text = grammar.consume_completion(
                 generated,
                 best_text,
             )
-
             generated += completion_text
             generated_ids.append(best_id)
 
@@ -337,11 +403,3 @@ def constrained_generate(
         generated += best_text
         generated_ids.append(best_id)
     return generated
-if __name__ == "__main__":
-    from llm_sdk.llm_sdk import Small_LLM_Model
-    model = Small_LLM_Model()
-    t = tuple(["potato", "tomtato", "1234"])
-    print(t)
-    TokenTrie(t, model)
-
-

@@ -1,29 +1,57 @@
-# ABOUTME: Small grammar/state-machine objects used by constrained decoding.
-# ABOUTME: They validate generated text and report whether a candidate continues
-# ABOUTME: or completes the current semantic value.
+"""Small grammar/state-machine objects used by constrained decoding.
+
+This module provides the validation logic for different JSON types (strings,
+numbers, and literal options) to ensure generated tokens remain valid.
+"""
+import sys
 try:
     import re
-    from typing import List, Protocol
+    from typing import List, Protocol, Tuple, Optional
 except Exception as exc:
     print(
-        f"Error: could not import required module: {exc}",
-        file=sys.stderr,
+        f"Error: could not import required module: {exc}"
     )
+    sys.exit(1)
 
 GrammarStatus = str
 
 
 class Grammar(Protocol):
+    """Protocol for grammar objects used in constrained decoding."""
     def check(self, so_far: str, token: str) -> GrammarStatus:
+        """Check if adding a token to the current string is valid.
+
+        Args:
+            so_far: The string generated up to this point.
+            token: The new token candidate to evaluate.
+
+        Returns:
+            GrammarStatus: 'invalid', 'continue', or 'complete'.
+        """
         ...
 
     def is_complete(self, so_far: str) -> bool:
-        ...
+        """Determine if the current string represents a full valid value.
 
-    def force_close(self, so_far: str) -> str:
+        Args:
+            so_far: The string to evaluate.
+
+        Returns:
+            bool: True if the grammar is satisfied and closed.
+        """
         ...
 
     def consume_completion(self, so_far: str, token: str) -> str:
+        """Extract only the relevant part of
+        a token that completes the grammar.
+
+        Args:
+            so_far: The string generated so far.
+            token: The token that finishes the value.
+
+        Returns:
+            str: The part of the token belonging to this grammar.
+        """
         ...
 
 
@@ -33,16 +61,7 @@ class StringGrammar:
     The caller emits the opening quote. This grammar is responsible for
     generating the string content and the final closing quote.
 
-    Valid JSON escapes are supported:
-        \"
-        \\
-        \/
-        \b
-        \f
-        \n
-        \r
-        \t
-        \uXXXX
+    Valid JSON escapes are supported: \", \\, \/, \b, \f, \n, \r, \t, \uXXXX.
     """
 
     MAX_LEN = 200
@@ -52,13 +71,12 @@ class StringGrammar:
     def consume_completion(self, so_far: str, token: str) -> str:
         """Return only the semantic part of a completion token.
 
-        The decoder may select a token containing the closing quote and
-        additional JSON syntax, for example:
+        Args:
+            so_far: String generated so far.
+            token: Token potentially containing extra JSON syntax.
 
-            '"}}\n'
-
-        Only the closing quote belongs to this string value. Everything
-        after it belongs to the surrounding JSON structure and is discarded.
+        Returns:
+            str: The portion of the token up to the closing quote.
         """
         quote_index = token.find('"')
 
@@ -68,6 +86,15 @@ class StringGrammar:
         return token
 
     def check(self, so_far: str, token: str) -> GrammarStatus:
+        """Validate if a token continues or completes a JSON string.
+
+        Args:
+            so_far: Current generated content.
+            token: New token to evaluate.
+
+        Returns:
+            GrammarStatus: State of the grammar.
+        """
         if not token:
             return "invalid"
 
@@ -87,33 +114,29 @@ class StringGrammar:
         return "invalid"
 
     def is_complete(self, so_far: str) -> bool:
+        """Check if the string is finished and valid.
+
+        Args:
+            so_far: The string to check.
+
+        Returns:
+            bool: True if the string is complete.
+        """
         if not so_far.endswith('"'):
             return False
 
         return self.validate(so_far) == "complete"
 
-    def force_close(self, so_far: str) -> str:
-        if self.validate(so_far) == "complete":
-            return ""
-
-        # If an escape is unfinished, complete it safely.
-        if so_far.endswith("\\"):
-            return '"'
-
-        if "\\u" in so_far:
-            index = so_far.rfind("\\u")
-            digits = so_far[index + 2:]
-
-            if 0 < len(digits) < 4 and all(
-                char in "0123456789abcdefABCDEF"
-                for char in digits
-            ):
-                return "0" * (4 - len(digits)) + '"'
-
-        return '"'
-
     @classmethod
     def validate(cls, text: str) -> GrammarStatus:
+        """State machine to validate JSON string escape sequences and length.
+
+        Args:
+            text: The text to validate.
+
+        Returns:
+            GrammarStatus: The internal state.
+        """
         escaped = False
         unicode_digits = 0
 
@@ -158,7 +181,14 @@ class StringGrammar:
 
 
 def _is_number_prefix(text: str) -> bool:
-    """Return whether text is a valid, possibly incomplete JSON number."""
+    """Return whether text is a valid, possibly incomplete JSON number.
+
+    Args:
+        text: The string to evaluate.
+
+    Returns:
+        bool: True if it is a valid numeric prefix.
+    """
 
     if text == "":
         return True
@@ -237,13 +267,14 @@ class NumberGrammar:
     JSON_DELIMITERS = {",", "}", "]"}
 
     def consume_completion(self, so_far: str, token: str) -> str:
-        """
-        Return the semantic value portion of a token that completes
-        the number.
+        """Return the numeric portion of a completing token.
 
-        Example:
-            so_far='2.0', token=',' -> ''
-            so_far='2.0', token='}' -> ''
+        Args:
+            so_far: The numeric string generated so far.
+            token: The token that finishes the number.
+
+        Returns:
+            str: The semantic numeric value.
         """
         candidate = so_far + token
 
@@ -256,6 +287,15 @@ class NumberGrammar:
         return token
 
     def check(self, so_far: str, token: str) -> GrammarStatus:
+        """Validate numeric tokens against JSON rules and delimiters.
+
+        Args:
+            so_far: Current numeric string.
+            token: Next token candidate.
+
+        Returns:
+            GrammarStatus: Validation state.
+        """
         if not token:
             return "invalid"
 
@@ -284,7 +324,14 @@ class NumberGrammar:
         return "invalid"
 
     def is_complete(self, text: str) -> bool:
-        """A number is complete only after its JSON delimiter appears."""
+        """Determine if numeric generation is finished.
+
+        Args:
+            text: The generated string.
+
+        Returns:
+            bool: True if the number is complete with a delimiter.
+        """
         number, delimiter = self._split_number_and_delimiter(text)
 
         return (
@@ -293,36 +340,49 @@ class NumberGrammar:
             and self.is_complete_number(number)
         )
 
-    def force_close(self, so_far: str) -> str:
-        """
-        Finish a valid number with a JSON delimiter.
-
-        This is only a fallback. Normally the model should generate
-        the delimiter itself.
-        """
-        return ""
-
     def is_valid_prefix(self, text: str) -> bool:
-        """Return True if text can still become a JSON number."""
+        """Check if text is a valid numeric start.
+
+        Args:
+            text: Prefix to check.
+
+        Returns:
+            bool: True if valid prefix.
+        """
         return _is_number_prefix(text)
 
     def is_complete_number(self, text: str) -> bool:
-        """Return True only for a complete JSON number."""
+        """Validate a full JSON number against regex.
+
+        Args:
+            text: Number string to validate.
+
+        Returns:
+            bool: True if complete JSON number.
+        """
         return bool(_NUMBER_RE.fullmatch(text))
 
     def is_delimiter(self, text: str) -> bool:
+        """Check if character is a JSON delimiter.
+
+        Args:
+            text: Char to check.
+
+        Returns:
+            bool: True if delimiter.
+        """
         return text in self.JSON_DELIMITERS
 
-    def _split_number_and_delimiter(self, text: str):
-        """
-        Split a number followed by optional JSON whitespace and
-        one JSON delimiter.
+    def _split_number_and_delimiter(self, text: str) -> Tuple[
+                                            Optional[str],
+                                            Optional[str]]:
+        """Split a string into a number and its trailing JSON delimiter.
 
-        Examples:
-            '265,'    -> ('265', ',')
-            '345}'    -> ('345', '}')
-            '1.25]'   -> ('1.25', ']')
-            '2.0 ,'   -> ('2.0', ',')
+        Args:
+            text: The candidate string.
+
+        Returns:
+            Tuple[Optional[str], Optional[str]]: The split components.
         """
 
         text = text.rstrip()
@@ -343,16 +403,42 @@ class NumberGrammar:
 class TrieGrammar:
     """Grammar for a fixed set of complete literal values."""
 
-    def __init__(self, options: List[str]):
+    def __init__(self, options: List[str]) -> None:
+        """Initialize the trie grammar with valid options.
+
+        Args:
+            options: List of allowed string values.
+
+        Raises:
+            ValueError: If options is empty.
+        """
         if not options:
             raise ValueError("TrieGrammar requires at least one option")
 
         self._options = tuple(options)
 
     def consume_completion(self, so_far: str, token: str) -> str:
+        """Return the completion token.
+
+        Args:
+            so_far: Current string.
+            token: Completion token.
+
+        Returns:
+            str: The token itself.
+        """
         return token
 
     def check(self, so_far: str, token: str) -> GrammarStatus:
+        """Check if a token leads to a valid entry in the trie.
+
+        Args:
+            so_far: Current string.
+            token: Token to append.
+
+        Returns:
+            GrammarStatus: Validation state.
+        """
         candidate = so_far + token
         for option in self._options:
             if candidate.endswith("\""):
@@ -363,14 +449,15 @@ class TrieGrammar:
         return "continue"
 
     def is_complete(self, so_far: str) -> bool:
+        """Check if string is a valid quoted entry.
+
+        Args:
+            so_far: The string to check.
+
+        Returns:
+            bool: True if valid.
+        """
         return (
             so_far.endswith('"')
             and so_far[:-1] in self._options
         )
-
-    def force_close(self, so_far: str) -> str:
-        for option in self._options:
-            if option.startswith(so_far):
-                return option[len(so_far):]
-
-        return ""

@@ -1,12 +1,16 @@
-# ABOUTME: Command-line entry point for call_me_maybe.
-# ABOUTME: Loads configuration and model, prepares token constraints once,
-# ABOUTME: processes prompts, and writes validated results.
+"""Command-line entry point for the call_me_maybe project.
+
+This module coordinates the loading of configuration,
+initialization of the LLM,
+processing of natural language prompts through a constrained decoding pipeline,
+and saving the validated results to a JSON file.
+"""
+import sys
 try:
     import argparse
     import json
-    import sys
     from pathlib import Path
-    from typing import List, Sequence
+    from typing import List, Dict, Sequence, Any
 
     from .decoding import ConstraintCache
     from .pipeline import PipelineError, process_prompt
@@ -20,6 +24,7 @@ except Exception as exc:
         f"Error: could not import required module: {exc}",
         file=sys.stderr,
     )
+    sys.exit(1)
 
 
 DEFAULT_FUNCTIONS_PATH = "data/input/functions_definition.json"
@@ -28,10 +33,19 @@ DEFAULT_OUTPUT_PATH = "data/output/function_calling_results.json"
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Parse command-line arguments.
+
+    Args:
+        argv: List of command-line arguments. Defaults to sys.argv[1:].
+
+    Returns:
+        argparse.Namespace: The parsed arguments containing file paths.
+    """
     parser = argparse.ArgumentParser(
         prog="call_me_maybe",
         description=(
-            "Translate natural language prompts into structured "
+            "Translate natural language "
+            "prompts into structured "
             "function calls."
         ),
     )
@@ -54,6 +68,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Main execution logic for the function calling tool.
+
+    Args:
+        argv: Command-line arguments.
+
+    Returns:
+        int: Exit code (0 for success, 1 for error).
+    """
     args = parse_args(argv)
 
     try:
@@ -66,7 +88,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
-    functions_by_name = {
+    functions_by_name: Dict[str, Any] = {
         fn.name: fn
         for fn in functions
     }
@@ -78,7 +100,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     except Exception as exc:
         print(
-            f"Error: could not load model {args.model!r}: {exc}",
+            f"Error: could not load model: {exc}",
             file=sys.stderr,
         )
         return 1
@@ -87,7 +109,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     constraint_cache = ConstraintCache(model)
 
-    results: List[dict] = []
+    results: List[Dict[str, Any]] = []
 
     for entry in prompts:
         try:

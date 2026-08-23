@@ -1,9 +1,13 @@
-# ABOUTME: Loads and validates the two JSON input files (functions + prompts).
-# ABOUTME: Never raises raw json/pydantic exceptions; always wraps them in ConfigError.
+"""Loads and validates the two JSON input files (functions + prompts).
+
+This module ensures that input files are valid JSON, contain the correct
+data structures, and adhere to the project's specific schema.
+"""
+import sys
 try:
     import json
     from pathlib import Path
-    from typing import Any, List
+    from typing import Any, List, Tuple, Dict
 
     from pydantic import ValidationError
 
@@ -11,15 +15,28 @@ try:
 except Exception as exc:
     print(
         f"Error: could not import required module: {exc}",
-        file=sys.stderr,
     )
+    sys.exit(1)
 
 
 class ConfigError(Exception):
-    """Raised when an input configuration file is missing, unreadable, or invalid."""
+    """Raised when an input configuration file is missing,
+    unreadable, or invalid."""
 
-def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-    result: dict[str, Any]= {}
+
+def reject_duplicates(pairs: List[Tuple[str, Any]]) -> Dict[str, Any]:
+    """Object pairs hook for json.loads to reject duplicate keys in JSON.
+
+    Args:
+        pairs: A list of key-value tuples from the JSON parser.
+
+    Returns:
+        Dict[str, Any]: A dictionary if no duplicates are found.
+
+    Raises:
+        ValueError: If a duplicate key is encountered.
+    """
+    result: Dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
             raise ValueError(f"duplicate key: {key}")
@@ -28,10 +45,16 @@ def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 
 def _load_json_array(path: str) -> List[Any]:
-    """Read *path* and return its parsed JSON content, guaranteed to be a list.
+    """Read path and return its parsed JSON content, guaranteed to be a list.
+
+    Args:
+        path: Path to the JSON file.
+
+    Returns:
+        List[Any]: The parsed JSON list content.
 
     Raises:
-        ConfigError: if the file is missing, not valid JSON, or not a JSON array.
+        ConfigError: If the file is missing, not valid JSON, or not an array.
     """
     file_path = Path(path)
     if not file_path.is_file():
@@ -47,8 +70,6 @@ def _load_json_array(path: str) -> List[Any]:
         raise ConfigError(f"invalid JSON in {path}: {exc}") from exc
     except ValueError as exc:
         raise ConfigError(f"invalid JSON in {path}: {exc}") from exc
-
-
     if not isinstance(data, list):
         raise ConfigError(f"{path} must contain a JSON array at the top level")
 
@@ -59,13 +80,14 @@ def load_functions_definition(path: str) -> List[FunctionDefinition]:
     """Load and validate the function definitions file.
 
     Args:
-        path: path to a functions_definition.json file.
+        path: Path to a functions_definition.json file.
 
     Returns:
-        The list of validated FunctionDefinition objects.
+        List[FunctionDefinition]: The list of validated
+        FunctionDefinition objects.
 
     Raises:
-        ConfigError: on any I/O, JSON, or schema validation failure.
+        ConfigError: On any I/O, JSON, or schema validation failure.
     """
     data = _load_json_array(path)
     if not data:
@@ -74,12 +96,13 @@ def load_functions_definition(path: str) -> List[FunctionDefinition]:
     try:
         functions = [FunctionDefinition.model_validate(item) for item in data]
     except ValidationError as exc:
-        raise ConfigError(f"invalid function definition in {path}: {exc}") from exc
+        raise ConfigError(f"invalid function definition in {path}: {exc}")
 
     names = [fn.name for fn in functions]
     duplicates = {name for name in names if names.count(name) > 1}
     if duplicates:
-        raise ConfigError(f"duplicate function name(s) in {path}: {sorted(duplicates)}")
+        raise ConfigError(f"duplicate function name(s) in {path}: "
+                          f"{sorted(duplicates)}")
 
     return functions
 
@@ -88,13 +111,13 @@ def load_prompts(path: str) -> List[PromptEntry]:
     """Load and validate the natural-language prompts file.
 
     Args:
-        path: path to a function_calling_tests.json file.
+        path: Path to a function_calling_tests.json file.
 
     Returns:
-        The list of validated PromptEntry objects.
+        List[PromptEntry]: The list of validated PromptEntry objects.
 
     Raises:
-        ConfigError: on any I/O, JSON, or schema validation failure.
+        ConfigError: On any I/O, JSON, or schema validation failure.
     """
     data = _load_json_array(path)
     try:

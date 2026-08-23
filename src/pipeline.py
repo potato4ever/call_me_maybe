@@ -1,8 +1,12 @@
-# ABOUTME: Orchestrates function selection and parameter generation.
-# ABOUTME: Fixed JSON syntax is constructed by the program; the model only
-# ABOUTME: generates semantic values.
+"""Orchestrates function selection and parameter generation.
+
+This module provides the high-level logic for choosing which function
+to call based on a natural language prompt and then generating each
+required parameter using constrained decoding.
+"""
+import sys
 try:
-    from typing import Dict, List, Union
+    from typing import Dict, List, Union, Tuple
 
     from .decoding import (
         ConstraintCache,
@@ -16,8 +20,8 @@ try:
 except Exception as exc:
     print(
         f"Error: could not import required module: {exc}",
-        file=sys.stderr,
     )
+    sys.exit(1)
 
 
 ParamValue = Union[float, int, str, bool]
@@ -33,14 +37,28 @@ def _select_function(
     functions: List[FunctionDefinition],
     functions_by_name: Dict[str, FunctionDefinition],
     prompt: str,
-) -> tuple[FunctionDefinition, str]:
+) -> Tuple[FunctionDefinition, str]:
+    """Use the LLM to select which function best matches the user prompt.
+
+    Args:
+        model: The LLM model instance.
+        constraint_cache: Cache for token tries.
+        functions: List of all available function definitions.
+        functions_by_name: Mapping of names to definitions for quick lookup.
+        prompt: The user's natural language request.
+
+    Returns:
+        Tuple[FunctionDefinition, str]: The selected function definition
+            and the updated prompt context for parameter generation.
+
+    Raises:
+        PipelineError: If function selection fails or returns an unknown name.
+    """
 
     selection_prompt = build_selection_prompt(
         functions,
         prompt,
     )
-
-
     grammar = TrieGrammar(
         [fn.name for fn in functions]
     )
@@ -52,7 +70,7 @@ def _select_function(
             selection_prompt,
             grammar,
             constraint_cache=constraint_cache,
-            max_tokens=24,
+            max_tokens=max_name_len,
         )
 
     except DecodingError as exc:
@@ -84,8 +102,27 @@ def _generate_parameter_value(
     param_type: str,
     parameters: Dict[str, ParamValue],
 ) -> ParamValue:
+    """Generate a single parameter value using the appropriate grammar.
 
-    context = ( f'Request: "{prompt}"\n' 
+    Args:
+        model: The LLM model instance.
+        constraint_cache: Cache for token tries.
+        prompt: The original user request.
+        function_name: Name of the selected function.
+        function_description: Description of the selected function.
+        param_name: The name of the parameter to generate.
+        param_type: The expected type ('string', 'number', 'bool', etc.).
+        parameters: Dictionary of parameters already generated.
+
+    Returns:
+        ParamValue: The generated value cast to the correct Python type.
+
+    Raises:
+        DecodingError: If generation fails for the specific type.
+        PipelineError: If the parameter type is unsupported.
+    """
+
+    context = (f'Request: "{prompt}"\n'
                f"Function: {function_name} — {function_description}\n"
                f"Parameters so far: {parameters!r}\n")
     for name, value in parameters.items():
@@ -119,8 +156,6 @@ def _generate_parameter_value(
     # ---------------------------------------------------------------
     if param_type in ("number", "integer"):
         context += f'"{param_name}": '
-
-
         generated = constrained_generate(
             model,
             context,
@@ -153,8 +188,6 @@ def _generate_parameter_value(
     # ---------------------------------------------------------------
     if param_type in ("boolean", "bool"):
         context += f'"{param_name}": '
-
-
         generated = constrained_generate(
             model,
             context,
@@ -177,6 +210,22 @@ def process_prompt(
     functions: List[FunctionDefinition],
     prompt: str,
 ) -> FunctionCallResult:
+    """Orchestrate the full transformation from prompt to function call result.
+
+    Args:
+        model: The LLM model instance.
+        constraint_cache: Cache for token tries.
+        functions_by_name: Dictionary for fast function lookup.
+        functions: List of all function definitions for the selection prompt.
+        prompt: The natural language request.
+
+    Returns:
+        FunctionCallResult: A validated Pydantic model containing the prompt,
+            function name, and extracted parameters.
+
+    Raises:
+        PipelineError: If selection or parameter extraction fails.
+    """
 
     fn_def, _ = _select_function(
         model,
