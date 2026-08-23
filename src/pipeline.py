@@ -1,18 +1,23 @@
 # ABOUTME: Orchestrates function selection and parameter generation.
 # ABOUTME: Fixed JSON syntax is constructed by the program; the model only
 # ABOUTME: generates semantic values.
+try:
+    from typing import Dict, List, Union
 
-from typing import Dict, List, Union
-
-from .decoding import (
-    ConstraintCache,
-    DecodingError,
-    LLMModel,
-    constrained_generate,
-)
-from .grammar import NumberGrammar, StringGrammar, TrieGrammar
-from .models import FunctionCallResult, FunctionDefinition
-from .prompt_builder import build_selection_prompt
+    from .decoding import (
+        ConstraintCache,
+        DecodingError,
+        LLMModel,
+        constrained_generate,
+    )
+    from .grammar import NumberGrammar, StringGrammar, TrieGrammar
+    from .models import FunctionCallResult, FunctionDefinition
+    from .prompt_builder import build_selection_prompt
+except Exception as exc:
+    print(
+        f"Error: could not import required module: {exc}",
+        file=sys.stderr,
+    )
 
 
 ParamValue = Union[float, int, str, bool]
@@ -92,21 +97,21 @@ def _generate_parameter_value(
     if param_type == "string":
         context += f'"{param_name}": "'
 
-
         generated = constrained_generate(
             model,
             context,
             StringGrammar(),
             constraint_cache=constraint_cache,
-            max_tokens=80,
+            max_tokens=100,
         )
-
+        status = StringGrammar().validate(generated)
+        if status == "invalid" or status == "prefix":
+            raise DecodingError("parameters selection failed")
         text_value = (
             generated[:-1]
             if generated.endswith('"')
             else generated
         )
-
         return text_value
 
     # ---------------------------------------------------------------

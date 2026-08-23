@@ -76,7 +76,7 @@ class StringGrammar:
         if len(candidate) > self.MAX_LEN:
             return "invalid"
 
-        state = self._validate(candidate)
+        state = self.validate(candidate)
 
         if state == "complete":
             return "complete"
@@ -90,10 +90,10 @@ class StringGrammar:
         if not so_far.endswith('"'):
             return False
 
-        return self._validate(so_far) == "complete"
+        return self.validate(so_far) == "complete"
 
     def force_close(self, so_far: str) -> str:
-        if self._validate(so_far) == "complete":
+        if self.validate(so_far) == "complete":
             return ""
 
         # If an escape is unfinished, complete it safely.
@@ -113,7 +113,7 @@ class StringGrammar:
         return '"'
 
     @classmethod
-    def _validate(cls, text: str) -> GrammarStatus:
+    def validate(cls, text: str) -> GrammarStatus:
         escaped = False
         unicode_digits = 0
 
