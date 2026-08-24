@@ -98,6 +98,7 @@ class PromptEntry(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     prompt: str
+
     @field_validator("prompt")
     @classmethod
     def validate_prompt_not_empty(cls, value: str) -> str:
