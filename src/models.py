@@ -102,6 +102,17 @@ class PromptEntry(BaseModel):
     @field_validator("prompt")
     @classmethod
     def validate_prompt_not_empty(cls, value: str) -> str:
+        """Validate that the prompt is not empty or whitespace-only.
+
+        Args:
+            value: The prompt text to validate.
+
+        Returns:
+            str: The stripped prompt text.
+
+        Raises:
+            ValueError: If the prompt is empty or contains only whitespace.
+        """
         stripped = value.strip()
         if not stripped:
             raise ValueError("prompt cannot be empty or whitespace-only")

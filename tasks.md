@@ -26,17 +26,31 @@ check:
 - readme
 - flake8
 - mypy
+- dostrings
+- is there checks for every parameter/functions situation
 - you should remove get_vocab() and decode_tokens (check if the vocab file didn't exist)
 - remove the debugging informations
 - look at _select_function if the max_name_len is right 
+- change np.empty from decoding.py
+- can remove Grammar
 # recoding
 - you should be able answer this "there is 1 blue car 3  apples green" to output this 
   ""car": \[1, "blue"], "apple": \[3, green] it's not necessary to give you function(apples is not wrong)
 
 
 
-  # Completed:
-    the trie doesn't work correctly it stops if you found "cat" and 
-      don't care about "catfish" \[x]
-    what happens when the model return empty \[x] (it stop the generation)
+# Completed:
+  the trie doesn't work correctly it stops if you found "cat" and 
+    don't care about "catfish" \[x]
+  what happens when the model return empty \[x] (it stop the generation)
 
+
+DOCSTRING:
+\__init__.py \[x]
+\__main__.py \[x]
+decoding.py \[x]
+grammar.py \[x]
+models.py
+pipeline.py
+prompt_builder.py
+schema_loader.py
