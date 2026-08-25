@@ -1,24 +1,8 @@
-handle:
-    if packages didn't exist
-    if there no function name it's not count as a function
-    if there is multiple keys or duplicates
-    if the file is empty
-    if one of the value is empty like (prompt is empty)
-
-  
 you should know:
     argparse
     json
     pydantic
     unicode
-    why this structure of files why everything in src/ 
-
-test:
-    i/o errors:
-            file not found
-            directory
-            permissions
-    keyboardinterrupt add also exception
 
 # Tasks:
 check:
@@ -27,10 +11,7 @@ check:
 - flake8
 - mypy
 - dostrings
-- is there checks for every parameter/functions situation
 - you should remove get_vocab() and decode_tokens (check if the vocab file didn't exist)
-- remove the debugging informations
-- look at _select_function if the max_name_len is right 
 - change np.empty from decoding.py
 - can remove Grammar
 # recoding
@@ -42,7 +23,11 @@ check:
 # Completed:
   the trie doesn't work correctly it stops if you found "cat" and 
     don't care about "catfish" \[x]
+  if one of the value is empty like (prompt is empty) \[x]
   what happens when the model return empty \[x] (it stop the generation)
+  if there no function name it's not count as a function \[x]
+  if there is multiple keys or duplicates \[x]
+  if the file is empty \[x]
 
 
 DOCSTRING:
@@ -54,3 +39,17 @@ models.py
 pipeline.py
 prompt_builder.py
 schema_loader.py
+
+# packages protection:
+packages:
+    \__init__.py \[x]
+    \__main__.py \[x]
+    decoding.py \[x]
+    grammar.py \[x]
+    models.py \[x]
+    pipeline.py \[x]
+    prompt_builder.py \[x]
+    schema_loader.py \[x]
+
+
+

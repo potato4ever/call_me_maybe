@@ -62,7 +62,7 @@ def _select_function(
     grammar = TrieGrammar(
         [fn.name for fn in functions]
     )
-    max_name_len = max(len(fn.name) for fn in functions)
+    max_name_len = max([len(fn.name) for fn in functions])
 
     try:
         generated = constrained_generate(
