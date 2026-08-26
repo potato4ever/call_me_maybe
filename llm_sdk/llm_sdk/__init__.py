@@ -106,15 +106,8 @@ class Small_LLM_Model:
             filename=vocab_file_name
         )
         return vocab_path
-    def decode_token(self, token_id: int) -> str:
-        return self._tokenizer.decode(
-            [token_id],
-            skip_special_tokens=True,
-        )
 
 
-    def get_vocab(self) -> dict[str, int]:
-        return self._tokenizer.get_vocab()
     def get_path_to_merges_file(self) -> str:
         merges_file_name = self._tokenizer.vocab_files_names.get('merges_file', "merges.txt")
         merges_path = hf_hub_download(

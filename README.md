@@ -39,7 +39,7 @@ processed prompt, the selected function name and its correctly-typed arguments.
 
 ```bash
 git clone <this-repo>
-cd call_me_maybe
+cd <this-repo>
 make install        # equivalent to: uv sync
 ```
 
@@ -81,9 +81,8 @@ make clean         # remove caches and generated output
   raw vocab entries into real text without depending on the `tokenizers` library).
 - [JSON specification (RFC 8259)](https://www.rfc-editor.org/rfc/rfc8259) — used as the
   reference grammar for what counts as a valid JSON string/number.
-- [Guidance / Outlines project write-ups on constrained decoding](https://github.com/dottxt-ai/outlines)
-  — general background reading on logit-masking approaches to structured generation
-  (no code or dependency from these projects was used, per the subject's constraints).
+- [YouTube — Constrained Decoding / LLMs](https://www.youtube.com/watch?v=xpvFinvqRCA)
+  — supplementary video resource related to constrained decoding and LLMs.
 - The subject PDF itself ("call me maybe — Introduction to function calling in LLMs").
 
 ### How AI was used
@@ -91,16 +90,12 @@ make clean         # remove caches and generated output
 An AI assistant (Claude) was used to:
 - Draft the initial project structure (`src/` module layout, `Makefile`, `pyproject.toml`).
 - Draft the constrained decoding engine (`src/decoding.py`), the grammar state machines
-  (`src/grammar.py`), and the byte-level BPE vocab decoder (`src/vocab.py`) — including
-  writing and running the unit tests in `tests/` to verify the number-prefix DFA, the
-  string/enum grammars, and the end-to-end pipeline logic against a scripted fake model
-  (no real model weights were available in the assistant's sandbox, so the constrained
-  decoding logic was validated with fake vocab/model doubles rather than a live LLM).
+  (`src/grammar.py`)
 - Draft this README.
 
 Every generated file was read and is understood; before submitting, re-run
-`make test` and `make lint`, and manually exercise `make run` against the real model to
-confirm end-to-end behaviour, per the "AI Instructions" chapter of the subject.
+`make lint`, and manually exercise `make run` against the real model to
+confirm end-to-end behaviour.
 
 ## Algorithm explanation
 
@@ -223,17 +218,87 @@ successful run produces entries such as:
   {
     "prompt": "What is the sum of 2 and 3?",
     "name": "fn_add_numbers",
-    "parameters": { "a": 2.0, "b": 3.0 }
+    "parameters": {
+      "a": 2.0,
+      "b": 3.0
+    }
+  },
+  {
+    "prompt": "What is the sum of 265 and 345?",
+    "name": "fn_add_numbers",
+    "parameters": {
+      "a": 265.0,
+      "b": 345.0
+    }
   },
   {
     "prompt": "Greet shrek",
     "name": "fn_greet",
-    "parameters": { "name": "shrek" }
+    "parameters": {
+      "name": "shrek"
+    }
+  },
+  {
+    "prompt": "Greet john",
+    "name": "fn_greet",
+    "parameters": {
+      "name": "john"
+    }
   },
   {
     "prompt": "Reverse the string 'hello'",
     "name": "fn_reverse_string",
-    "parameters": { "s": "hello" }
+    "parameters": {
+      "s": "hello"
+    }
+  },
+  {
+    "prompt": "Reverse the string 'world'",
+    "name": "fn_reverse_string",
+    "parameters": {
+      "s": "world"
+    }
+  },
+  {
+    "prompt": "What is the square root of 16?",
+    "name": "fn_get_square_root",
+    "parameters": {
+      "a": 16.0
+    }
+  },
+  {
+    "prompt": "Calculate the square root of 144",
+    "name": "fn_get_square_root",
+    "parameters": {
+      "a": 144.0
+    }
+  },
+  {
+    "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "Hello 34 I'm 233 years old",
+      "regex": "34|233",
+      "replacement": "NUMBERS"
+    }
+  },
+  {
+    "prompt": "Replace all vowels in 'Programming is fun' with asterisks",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "Programming is fun",
+      "regex": ".*[aeiouAEIOU].*",
+      "replacement": "****Programming is ****fun****"
+    }
+  },
+  {
+    "prompt": "Substitute the word 'cat' with 'dog' in 'The cat sat on the mat with another cat'",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "The cat sat on the mat with another cat",
+      "regex": "cat",
+      "replacement": "dog"
+    }
   }
 ]
 ```

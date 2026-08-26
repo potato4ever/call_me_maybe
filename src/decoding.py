@@ -201,7 +201,7 @@ class TokenTrie:
         for token_id in generated_ids:
             next_node = node.children.get(token_id)
             if next_node is None:
-                return np.empty(0, dtype=np.int64)
+                return np.array([])
             node = next_node
 
         return np.array(list(node.children.keys()), dtype=np.int64)

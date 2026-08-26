@@ -1,2 +1,5 @@
 **pycache**
 .venv
+.env
+.mypy_cache/
+data/output/

@@ -6,17 +6,12 @@ you should know:
 
 # Tasks:
 check:
-- .gitignore
-- readme
 - flake8
 - mypy
-- dostrings
-- you should remove get_vocab() and decode_tokens (check if the vocab file didn't exist)
-- change np.empty from decoding.py
-- can remove Grammar
+- in code: check the understanding of ConstrainedCache
 # recoding
 - you should be able answer this "there is 1 blue car 3  apples green" to output this 
-  ""car": \[1, "blue"], "apple": \[3, green] it's not necessary to give you function(apples is not wrong)
+  ""car": \[1, "blue"], "apple": \[3, green] it's not necessary to give you function(apple is not wrong)
 
 
 
@@ -28,6 +23,9 @@ check:
   if there no function name it's not count as a function \[x]
   if there is multiple keys or duplicates \[x]
   if the file is empty \[x]
+  dostrings \[x]
+- .gitignore
+- readme\[x]
 
 
 DOCSTRING:
