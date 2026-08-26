@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by \<login1\>[, \<login2\>].*
+*This project has been created as part of the 42 curriculum by zabelhac.*
 
 # call me maybe — Introduction to function calling in LLMs
 
