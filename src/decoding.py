@@ -30,19 +30,44 @@ class LLMModel(Protocol):
     """
 
     def encode(self, text: str) -> Any:
-        """Encode text into token IDs."""
+        """Encode text into token IDs.
+
+        Args:
+            text: The text to tokenize.
+
+        Returns:
+            Any: The encoded token IDs returned by the model tokenizer.
+        """
         ...
 
     def get_path_to_vocab_file(self) -> str:
-        """Return the path to the vocabulary JSON file."""
+        """Return the path to the model vocabulary file.
+
+        Returns:
+            str: The filesystem path to the vocabulary JSON file.
+        """
         ...
 
     def decode(self, ids: Any) -> str:
-        """Decode token IDs back into text."""
+        """Decode token IDs into text.
+
+        Args:
+            ids: The token ID or token IDs to decode.
+
+        Returns:
+            str: The decoded text.
+        """
         ...
 
     def get_logits_from_input_ids(self, input_ids: List[int]) -> List[float]:
-        """Get the next-token logits from the model."""
+        """Compute logits for the next token.
+
+        Args:
+            input_ids: The token IDs representing the current input.
+
+        Returns:
+            List[float]: The logits for the next-token vocabulary.
+        """
         ...
 
 
@@ -139,7 +164,7 @@ class TokenTrie:
         """Build a token trie from a list of strings.
 
         Args:
-            values: List of valid string options.
+            values: Sequence of valid string options.
             model: The LLM model used for encoding.
         """
         self.root = TokenTrieNode()
@@ -198,7 +223,7 @@ class ConstraintCache:
         """Retrieve a cached trie or create a new one.
 
         Args:
-            options: List of valid strings for the grammar.
+            options: Tuple of valid strings for the grammar.
 
         Returns:
             TokenTrie: The trie for the provided options.
@@ -331,9 +356,6 @@ def constrained_generate(
 
             if not best_text:
                 raise DecodingError(f"chosen token {best_id} is empty text")
-                # A token with no decoded text cannot help us generate a value.
-                generated_ids.append(best_id)
-                continue
 
             status = grammar.check(
                 generated,

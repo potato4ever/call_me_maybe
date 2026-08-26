@@ -36,7 +36,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command-line arguments.
 
     Args:
-        argv: List of command-line arguments. Defaults to sys.argv[1:].
+        argv: Sequence of command-line arguments. Defaults to sys.argv[1:].
 
     Returns:
         argparse.Namespace: The parsed arguments containing file paths.

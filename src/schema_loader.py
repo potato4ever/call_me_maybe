@@ -21,7 +21,8 @@ except Exception as exc:
 
 class ConfigError(Exception):
     """Raised when an input configuration file is missing,
-    unreadable, or invalid."""
+    unreadable, or invalid.
+    """
 
 
 def reject_duplicates(pairs: List[Tuple[str, Any]]) -> Dict[str, Any]:
